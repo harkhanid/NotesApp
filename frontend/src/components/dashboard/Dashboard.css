@@ -1,0 +1,9 @@
+.home-container{
+  display: flex;
+  overflow: hidden;
+  height: 100vh;
+  color: var(--clr-neutral-700);
+}
+
+
+

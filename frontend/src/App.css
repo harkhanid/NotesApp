@@ -1,0 +1,46 @@
+.auth-page{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--clr-neutral-100);
+  padding: 1em;
+}
+
+.card{
+  width: 32.5rem;
+  padding: 2.5em 1em;
+  background-color: var(--clr-neutral-0);
+  border-radius: 10px;
+}
+
+.logo{
+  margin-inline: auto;
+}
+
+.card-text{
+  text-align: center;
+}
+
+.sub-title{
+  color: var(--clr-neutral-600);
+  margin-top: 0.5em;
+}
+
+.password-label {
+  justify-content: space-between;
+}
+
+.password-label > a{
+  color: var(--clr-neutral-600);
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
+
+button.google-login{
+  justify-content: center;
+  gap: 0.25rem;
+  align-items: center;
+}

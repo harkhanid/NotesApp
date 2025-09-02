@@ -1,0 +1,214 @@
+/* Needed for Tiptap editor */
+/* @import './styles/_variables.scss';
+@import './styles/_keyframe-animations.scss'; */
+
+
+:root{
+  --clr-neutral-950: #0E121B;
+  --clr-neutral-900: #191B25;
+  --clr-neutral-800: #232530;
+  --clr-neutral-700: #2B303B;
+  --clr-neutral-600: #525866;
+  --clr-neutral-500: #717784;
+  --clr-neutral-400: #99A0AE;
+  --clr-neutral-300: #CACFD8;
+  --clr-neutral-200: #E0E4EA;
+  --clr-neutral-100: #F3F5F8;
+  --clr-neutral-50: #F5F7FA;
+  --clr-neutral-0: #FFFFFF;
+
+  --clr-blue-700: #2547D0;
+  --clr-blue-500: #335CFF;
+  --clr-blue-50: #EBF1FF;
+
+  --clr-green-500: #21C16B;
+  --clr-green-50: #D1FBE9;
+
+  --clr-red-500: #FB3748;
+  --clr-red-50: #FFD5D8;
+
+  --fs-700: 1.5rem; /* 24px */
+  --fs-600: 1.25rem; /* 20px */
+  --fs-400: 1rem; /* 16px */
+  --fs-350: 0.875rem; /* 14px */
+  --fs-300: 0.75rem; /* 12px */
+
+  --border-grid: 1px solid var(--clr-neutral-200);
+}
+
+
+*, *::before, *::after{
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+hr,
+label,
+figure {
+  margin: 0;
+  line-height: 1.2;
+}
+
+
+label{
+  color: var(--clr-neutral-950);
+}
+
+
+ul, ol{
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+
+li::marker{
+  padding-left:0.5rem;
+  color: var(--clr-rose-800);
+  font-weight: 700;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button{
+  cursor: pointer;
+}
+
+input{
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--clr-neutral-300);
+  border-radius: 0.5rem;
+}
+
+img{
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+hr{
+  border:none;
+  border-top: 1px solid var(--clr-neutral-200);
+}
+
+/* utility class */
+
+.flow-content > * + *{
+  margin-top: var(--spacer, 1em);
+}
+
+l-spacer > *{
+  --spacer: 2em;
+}
+
+.s-spacer > * {
+  --spacer: 1.5em;
+}
+
+.xs-spacer > * {
+  --spacer: 1em;
+}
+
+.xsm-spacer > * {
+  --spacer:0.75rem;
+}
+
+.xxs-spacer > * {
+  --spacer: 0.35em;
+}
+
+
+.bold{
+  font-weight: 700;
+}
+.split{
+  display: flex;
+}
+
+.block{
+  display: block;
+}
+
+.center{
+  text-align: center;
+}
+
+.font-inter{
+  font-family: 'Inter', sans-serif;
+}
+
+.font-noto{
+  font-family: 'Noto Sans', serif;
+}
+
+.font-sourcecode{
+  font-family: 'Source Code Pro', monospace;
+}
+
+.preset-1{
+  font-size: var(--fs-700);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.preset-2{
+  font-size: var(--fs-600);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.preset-3{
+  font-size: var(--fs-400);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.preset-4{
+  font-size: var(--fs-350);
+  font-weight:500;
+  letter-spacing: -0.2px;
+}
+
+.preset-5{
+  font-size: var(--fs-350);
+  font-weight:300;
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+}
+
+.preset-6{
+  font-size: var(--fs-300);
+  font-weight: 300;
+  letter-spacing: -0.2px;
+}
+
+.full-width{
+  width: 100%;
+}
+
+.btn{
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.btn-primary{
+  border:none;
+  background-color: var(--clr-blue-500);
+  color: var(--clr-neutral-0);
+}
+
+.btn-primary:hover{
+  background-color: var(--clr-blue-700);
+}
