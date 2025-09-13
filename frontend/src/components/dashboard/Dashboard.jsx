@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import SideBar from "../sidebar/SideBar";
 import MainPage from "../mainPage/MainPage";
-import {MENU} from '../../constants/constants.js';
+import { fetchAllNotesAsync } from '../../store/notesSlice.js';
 
 import "./Dashboard.css"
+import { useDispatch } from "react-redux";
 const Dashboard = () => {
-  const [selectedPage, setSelectedPage] = useState(MENU.ALL_NOTES);
-  
+  const dispatch = useDispatch();
+  useEffect(()=>{
+    dispatch(fetchAllNotesAsync());
+  },[])
 
   const [tags, setTags] = useState(()=>{
     const tagList = localStorage.getItem("Tags");
@@ -16,8 +19,8 @@ const Dashboard = () => {
 
   return (
     <div className="home-container">
-      <SideBar selectedPage={selectedPage} setSelectedPage={setSelectedPage} tags={tags} />
-      <MainPage selectedPage={selectedPage} />
+      <SideBar tags={tags} />
+      <MainPage  />
     </div>
   );
 };

@@ -83,6 +83,7 @@ select {
 
 button{
   cursor: pointer;
+  color: inherit
 }
 
 input{
@@ -194,9 +195,6 @@ l-spacer > *{
   letter-spacing: -0.2px;
 }
 
-.full-width{
-  width: 100%;
-}
 
 .btn{
   border-radius: 0.5rem;
@@ -211,4 +209,11 @@ l-spacer > *{
 
 .btn-primary:hover{
   background-color: var(--clr-blue-700);
+}
+
+@media (min-width: 75em) {
+  .full-width{
+    width: 100%;
+  }
+
 }

@@ -1,65 +1,92 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { updateNote,updateANoteAsync,setCurrentNote } from "../../store/notesSlice.js";
+import { useDispatch, useSelector } from "react-redux";
+import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
+import HeadingEditor from "../editor/HeadingEditor.jsx";
+import Editor from "../editor/Editor.jsx";
+
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
 import DeleteIcon from "../../assets/images/icon-delete.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 import ClockIcon from "../../assets/images/icon-clock.svg?react";
-import Editor from "../editor/Editor.jsx";
-import { MENU } from "../../constants/constants.js";
+import LeftArrowIcon from "../../assets/images/icon-arrow-left.svg?react";
 
 import "./MainPage.css";
-import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
-const MainPage = ({selectedPage}) => {
-  const [currentNote, setcurrentNote] = useState(null);
-  const [content, setContent] = useState();
-  const [title, setTitle] = useState({title:"",preTitle:""});
+
+const MainPage = () => {
+  const dispatch = useDispatch();
+  const currentFilter = useSelector((state) => state.ui.filter);
+  const currentNoteId = useSelector((state)=> state.notes.currentId);
+  const currentNote =  useSelector((state)=> currentNoteId == null ? null: state.notes.byId[currentNoteId]);
+  let title = useState({title:"",preTitle:""});
+  let preTitle= "";
+  switch(currentFilter){
+    case "ALL":
+      title="All Notes"
+      break;
+    case "ARCHIVED":
+      title="Archived Notes"
+      break;
+    default:
+      title="";
+  }
 
   useEffect(()=>{
-    setFakeText();
-    if(selectedPage == MENU.ALL_NOTES){
-      setTitle({preTitle:"", title:selectedPage});
-    }else if(selectedPage == MENU.ARCHIEVD_NOTES){
-      setTitle({preTitle:"", title:selectedPage});
-    }else{
-      const splitText = selectedPage.split(":");
-      if(splitText[0] == "Tag"){
-        setTitle({preTitle:"Tag selected:", title:splitText[1]});
+    return ()=>{
+      if(timeoutRef.current){
+        clearTimeout(timeoutRef.current);
       }
     }
-  },[selectedPage]);
+  },[]);
+  const timeoutRef = useRef(null);
 
-  const setFakeText = () =>{
-    const newNote = {
-      id: uuidv4(),
-      title:"",
-      archiveFlag: false,
-      tags:[],
-      date: Date.now(),
-      content:"<p>Your content go here</p>"
+  const handleContentUpdate = (html,id) => {
+    if (!currentNote) return;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
-    setcurrentNote(newNote);
-  }
 
-  const toggleArchive = () => {
-    setcurrentNote(prev => {
-      const updatedNote = { ...prev, archiveFlag: !prev.archiveFlag }
-      setNotesList(list =>
-        list.map(note =>
-          note.id === updatedNote.id ? updatedNote : note
-        )
-      )
-      return updatedNote
-    })
-  }
-
-  const handleContentUpdate = (html) =>{
-    console.log(html);
-    setContent(html);
-  }
+    timeoutRef.current = setTimeout(() => {
+      dispatch(updateNote({ ...currentNote, content: html, id: id }));
+      dispatch(updateANoteAsync({ ...currentNote, content: html, id: id }))
+    }, 1000); // wait 1s after last input
+  };
   
-  const NoteContent = () =>
-  <>
-    <h2>Note Title</h2>
+  const toggleArchive = () => {
+    dispatch(updateNote({...currentNote, archiveFlag: true}));
+    dispatch(updateANoteAsync({ ...currentNote, archiveFlag: true }))
+
+  }
+
+  const updateTitle = (title) =>{
+    dispatch(updateNote({...currentNote, title:title}));
+    dispatch(updateANoteAsync({ ...currentNote, title:title }))
+}
+
+  return (
+    <div className="main-page ">
+      <div className={`main-page_header ${currentNoteId == null ? "mobile-show" : "mobile-hide" }`}>
+        <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
+        <div className="header-tools split">        
+          <input type="text" placeholder="Search by title, content or tags..." />
+          <SettingIcon className="icon settings-icon" />
+        </div>
+      </div>
+      <InnerSideBar />
+      <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "mobile-show" }` }>
+        <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
+
+          <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
+          <div className="top-bar-right">
+            <button className="btn-none" onClick={toggleArchive}><ArchiveIcon /></button>
+            <button className="btn-none"><DeleteIcon /></button>
+          </div>
+        </div>
+        {/* <div className="full-width"></div> */}
+        {currentNote && <>
+        <HeadingEditor initialContent={currentNote.title} onUpdate={updateTitle} />
     <div className="note-metadata preset-5 flow-content xxs-spacer">
       <div className="split">
         <div className="split metadata_key">
@@ -78,22 +105,8 @@ const MainPage = ({selectedPage}) => {
     </div>
     <hr />
     
-    <Editor initialContent={content} onUpdate={handleContentUpdate} />
-    </>;
- 
-  return (
-    <div className="main-page">
-      <div className="main-page_header">
-        <h2 className="header-title preset-1">{title.preTitle.length > 0 && <span className="pretitle">{title.preTitle}</span>}{title.title}</h2>
-        <div className="header-tools split">        
-          <input type="text" placeholder="Search by title, content or tags..." />
-          <SettingIcon className="icon settings-icon" />
-        </div>
-      </div>
-      <InnerSideBar selectedPage={selectedPage} setcurrentNote={setcurrentNote} currentNote={currentNote} />
-      <div className="note-content flow-content">
-        <div className="full-width"></div>
-        {currentNote && <NoteContent />}
+    <Editor initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId}/>
+    </>}
       </div>
       <div className="right-sidebar flow-content">
         <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>

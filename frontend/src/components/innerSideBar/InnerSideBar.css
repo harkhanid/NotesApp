@@ -1,0 +1,48 @@
+.notes-add > button{
+  position: absolute;
+  bottom: 7rem;
+  right: 1rem;
+  border-radius: 100%;
+}
+
+.notes-add > button > span {
+  display: none;
+}
+
+.note-item{
+  border-bottom: 1px solid var(--clr-neutral-200);
+  padding: 0.75rem 0rem;
+  cursor: pointer;
+}
+
+@media (min-width: 75em) {
+  .notes-add > button{
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: 0.5rem;   
+    top:0;
+    left: 0;
+  }
+  .notes-add > button > span {
+    display: block;
+  }
+  .notes-list {
+    margin-top: 1rem;
+  }
+
+  .note-item{
+    padding: 0.75rem 0.5rem;
+  }
+
+  .note-item.selected{
+    background-color: var(--clr-neutral-100);
+    border-radius: 0.4rem;
+  } 
+}
+
+
+
+.tags-placeholder{
+  color: var(--clr-neutral-400);
+}
