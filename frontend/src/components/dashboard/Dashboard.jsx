@@ -10,16 +10,9 @@ const Dashboard = () => {
   useEffect(()=>{
     dispatch(fetchAllNotesAsync());
   },[])
-
-  const [tags, setTags] = useState(()=>{
-    const tagList = localStorage.getItem("Tags");
-    return tagList ? JSON.parse(tagList):["Cooking","Fitness"]
-  })
-
-
   return (
     <div className="home-container">
-      <SideBar tags={tags} />
+      <SideBar />
       <MainPage  />
     </div>
   );

@@ -104,6 +104,21 @@ hr{
   border-top: 1px solid var(--clr-neutral-200);
 }
 
+.icon{
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.home-icon, .search-icon, .setting-icon{
+  fill:var(--SVG_COLOR, var(--clr-neutral-600));
+}
+
+.archive-icon, .tag-icon {
+  stroke:var(--SVG_COLOR, var(--clr-neutral-600));
+}
+
+
 /* utility class */
 
 .flow-content > * + *{

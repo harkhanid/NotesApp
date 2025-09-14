@@ -9,7 +9,48 @@ const initialState = {
   allIds: [],
   searchIds: [],
   currentId: null,
+  tags: ["Cooking", "Fitness"],
 };
+
+export const fetchAllNotesAsync = createAsyncThunk(
+  "notes/fetchAllnotesAsync",
+  async () => {
+    return getAllNotes();
+  }
+);
+
+export const searchNotesAsync = createAsyncThunk(
+  "notes/searchNotesAsync",
+  async (query) => {
+    console.log("Searching for:", query);
+    const allNotes = getAllNotes();
+    return allNotes
+      .filter((note) => {
+        if (!query || query.length == 0) return false;
+        const q = query.toLowerCase();
+        return (
+          note.title.toLowerCase().includes(q) ||
+          note.content.toLowerCase().includes(q) ||
+          note.tags.some((tag) => tag.toLowerCase().includes(q))
+        );
+      })
+      .map((note) => note.id);
+  }
+);
+
+export const updateANoteAsync = createAsyncThunk(
+  "notes/updateANoteAsync",
+  async (note) => {
+    return UpdateNoteLocalStorage(note);
+  }
+);
+
+export const addAnoteAsync = createAsyncThunk(
+  "notes/addAnoteAsync",
+  async (note) => {
+    return addNoteLocalStorage(note);
+  }
+);
 
 export const notesSlice = createSlice({
   name: "notes",
@@ -35,7 +76,7 @@ export const notesSlice = createSlice({
     },
     deleteNote: (state, action) => {
       const { id } = action.payload;
-      delete state.allIds[id];
+      state.allIds = state.allIds.filter((nid) => nid != id);
     },
     setCurrentNote: (state, action) => {
       const { id } = action.payload;
@@ -43,41 +84,25 @@ export const notesSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchAllNotesAsync.fulfilled, (state, action) => {
-      const notes = action.payload;
-      state.byId = {};
-      state.allIds = [];
-      notes.forEach((note) => {
-        state.byId[note.id] = note;
-        state.allIds.push(note.id);
+    builder
+      .addCase(fetchAllNotesAsync.fulfilled, (state, action) => {
+        const notes = action.payload;
+        state.byId = {};
+        state.allIds = [];
+        notes.forEach((note) => {
+          state.byId[note.id] = note;
+          state.allIds.push(note.id);
+        });
+        // if (notes.length > 0 && state.currentId == null) {
+        //   state.currentId = notes[0].id;
+        // }
+      })
+      .addCase(searchNotesAsync.fulfilled, (state, action) => {
+        const searchIds = action.payload;
+        state.searchIds = searchIds;
       });
-      // if (notes.length > 0 && state.currentId == null) {
-      //   state.currentId = notes[0].id;
-      // }
-    });
   },
 });
-
-export const fetchAllNotesAsync = createAsyncThunk(
-  "notes/fetchAllnotesAsync",
-  async () => {
-    return getAllNotes();
-  }
-);
-
-export const updateANoteAsync = createAsyncThunk(
-  "notes/updateANoteAsync",
-  async (note) => {
-    return UpdateNoteLocalStorage(note);
-  }
-);
-
-export const addAnoteAsync = createAsyncThunk(
-  "notes/addAnoteAsync",
-  async (note) => {
-    return addNoteLocalStorage(note);
-  }
-);
 
 export const { addAnote, deleteNote, updateNote, setCurrentNote } =
   notesSlice.actions;

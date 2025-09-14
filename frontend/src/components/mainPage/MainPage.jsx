@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote } from "../../store/notesSlice.js";
+import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync } from "../../store/notesSlice.js";
+import { selectTag, setSearchNotes } from "../../store/uiSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
 import HeadingEditor from "../editor/HeadingEditor.jsx";
@@ -17,42 +18,74 @@ import "./MainPage.css";
 const MainPage = () => {
   const dispatch = useDispatch();
   const currentFilter = useSelector((state) => state.ui.filter);
+  const currentTag = useSelector((state)=> state.ui.selectedTag);
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const currentNote =  useSelector((state)=> currentNoteId == null ? null: state.notes.byId[currentNoteId]);
-  let title = useState({title:"",preTitle:""});
+  let title = "";
+  const timeoutNoteUpdateRef = useRef(null);
+  const timeoutSearchUpdateRef = useRef(null);
+
+
   let preTitle= "";
+  let displayBackPanel = false;
   switch(currentFilter){
     case "ALL":
       title="All Notes"
       break;
     case "ARCHIVED":
+      console.log("Setting title to archived");
       title="Archived Notes"
+      break;
+    case "SEARCH":
+      title="Search";
+      break;
+    case "TAG":
+      if(currentTag.length > 0){
+        displayBackPanel = true;
+        preTitle="Notes tagged:";
+        title=currentTag;
+      }else{
+        displayBackPanel = false;
+        title="Tags";
+      }
       break;
     default:
       title="";
   }
 
+  /* Debounce Destoyer on unmounting */
   useEffect(()=>{
     return ()=>{
-      if(timeoutRef.current){
-        clearTimeout(timeoutRef.current);
+      if(timeoutNoteUpdateRef.current){
+        clearTimeout(timeoutNoteUpdateRef.current);
+        clearTimeout(timeoutNoteUpdateRef.current);
       }
     }
   },[]);
-  const timeoutRef = useRef(null);
 
+
+  /* Debounced Content Updater */
   const handleContentUpdate = (html,id) => {
     if (!currentNote) return;
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeoutNoteUpdateRef.current) {
+      clearTimeout(timeoutNoteUpdateRef.current);
     }
-
-    timeoutRef.current = setTimeout(() => {
+    timeoutNoteUpdateRef.current = setTimeout(() => {
       dispatch(updateNote({ ...currentNote, content: html, id: id }));
       dispatch(updateANoteAsync({ ...currentNote, content: html, id: id }))
-    }, 1000); // wait 1s after last input
+    }, 1000); 
   };
+
+ const handleKeyPress = (e) => {
+  const value = e.target.value;
+  dispatch(setSearchNotes({ query: value }));
+  if (timeoutSearchUpdateRef.current) {
+    clearTimeout(timeoutSearchUpdateRef.current);
+  }
+  timeoutSearchUpdateRef.current = setTimeout(() => {
+    dispatch(searchNotesAsync(value)); // use fresh input
+  }, 300);
+};
   
   const toggleArchive = () => {
     dispatch(updateNote({...currentNote, archiveFlag: true}));
@@ -65,14 +98,20 @@ const MainPage = () => {
     dispatch(updateANoteAsync({ ...currentNote, title:title }))
 }
 
+  
+  
+
   return (
     <div className="main-page ">
       <div className={`main-page_header ${currentNoteId == null ? "mobile-show" : "mobile-hide" }`}>
-        <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
-        <div className="header-tools split">        
-          <input type="text" placeholder="Search by title, content or tags..." />
-          <SettingIcon className="icon settings-icon" />
+        <div className={`tag-topbar mobile-topbar ${displayBackPanel? "" :"mobile-hide" }`}>
+          <button className="btn-none goback-btn" onClick={()=>{dispatch(selectTag({tag:""}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
         </div>
+        <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
+        {<div className={`header-tools split ${currentFilter == "SEARCH"? "mobile-show": "mobile-hide" }`}>        
+          <input type="text" placeholder="Search by title, content or tags..." onChange={handleKeyPress} />
+          <SettingIcon className="icon settings-icon mobile-hide" />
+        </div>}
       </div>
       <InnerSideBar />
       <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "mobile-show" }` }>

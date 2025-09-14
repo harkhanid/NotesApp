@@ -1,8 +1,22 @@
 .notes-add > button{
+  display: flex;
+  justify-content: center;
+  gap:0.5rem;
   position: absolute;
-  bottom: 7rem;
+  bottom: 5rem;
   right: 1rem;
   border-radius: 100%;
+}
+
+.tagIcon{
+  width: 1rem;
+  height: 1rem;
+}
+
+
+
+.notes-add svg{
+  fill: var(--clr-neutral-0);
 }
 
 .notes-add > button > span {
