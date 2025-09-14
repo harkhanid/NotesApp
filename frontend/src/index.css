@@ -83,6 +83,7 @@ select {
 
 button{
   cursor: pointer;
+  color: inherit
 }
 
 input{
@@ -102,6 +103,21 @@ hr{
   border:none;
   border-top: 1px solid var(--clr-neutral-200);
 }
+
+.icon{
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.home-icon, .search-icon, .setting-icon{
+  fill:var(--SVG_COLOR, var(--clr-neutral-600));
+}
+
+.archive-icon, .tag-icon {
+  stroke:var(--SVG_COLOR, var(--clr-neutral-600));
+}
+
 
 /* utility class */
 
@@ -194,9 +210,6 @@ l-spacer > *{
   letter-spacing: -0.2px;
 }
 
-.full-width{
-  width: 100%;
-}
 
 .btn{
   border-radius: 0.5rem;
@@ -211,4 +224,11 @@ l-spacer > *{
 
 .btn-primary:hover{
   background-color: var(--clr-blue-700);
+}
+
+@media (min-width: 75em) {
+  .full-width{
+    width: 100%;
+  }
+
 }

@@ -1,8 +1,17 @@
 .home-container{
   display: flex;
   overflow: hidden;
+  flex-direction: column;
   height: 100vh;
   color: var(--clr-neutral-700);
+  background-color: var(--clr-neutral-100);
+}
+
+@media (min-width: 75em){
+  .home-container{
+    flex-direction: row;
+    background-color: var(--clr-neutral-0);
+  }
 }
 
 

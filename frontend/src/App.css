@@ -15,6 +15,13 @@
   border-radius: 10px;
 }
 
+.btn-none{
+  background-color: #fff;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 .logo{
   margin-inline: auto;
 }
