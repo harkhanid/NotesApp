@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import Dashboard from './components/dashboard/Dashboard.jsx';
-import SignUpPage from './components/signUpPage/signUpPage.jsx';
+import SignUpPage from './components/signUpPage/SignUpPage.jsx';
 import LoginPage from './components/loginPage/LoginPage.jsx';
 import ResetPage from './components/resetPage/ResetPage.jsx';
 
