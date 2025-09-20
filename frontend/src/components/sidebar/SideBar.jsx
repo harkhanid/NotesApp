@@ -69,7 +69,7 @@ const SideBar = () => {
        <button className={`nav-item  ${currentFilter == "TAG"? "selected":""}`} onClick={()=>{setFilter("TAG")}} > 
           <TagIcon className="icon tag-icon" />
         </button>
-       <button className={`nav-item  ${currentFilter == "SETTING"? "selected":""}`} onClick={()=>{setFilter("SETTING")}} > 
+       <button className={`nav-item  ${currentFilter == "SETTINGS"? "selected":""}`} onClick={()=>{setFilter("SETTINGS")}} > 
           <SettingsIcon className="icon setting-icon" />
         </button>
        

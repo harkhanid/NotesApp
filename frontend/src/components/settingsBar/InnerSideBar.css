@@ -1,0 +1,26 @@
+.setting-option{
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--clr-neutral-200);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  gap: 1rem;
+  cursor: pointer;
+  align-items: center;
+}
+
+.setting-option.selected{
+  background-color: var(--clr-neutral-100);
+} 
+
+.option-icon-container{
+  border: 1px solid var(--clr-neutral-200);
+  padding: 0.5rem;
+  background-color: var(--clr-neutral-0);
+  border-radius: 0.5rem;
+} 
+
+.setting-option input{
+  margin-left: auto;
+  flex: 2rem 0 1;
+}
