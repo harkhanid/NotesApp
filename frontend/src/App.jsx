@@ -1,27 +1,39 @@
-import { useEffect, useState } from 'react'
+import { Route, Routes } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
+import Dashboard from './components/dashboard/Dashboard.jsx';
+import SignUpPage from './components/signUpPage/signUpPage.jsx';
 import LoginPage from './components/loginPage/LoginPage.jsx';
-import ResetPage from './components/resetPage/ResetPage.jsx'
+import ResetPage from './components/resetPage/ResetPage.jsx';
+
 import './Fonts.css'
 import './App.css'
-import { Route, Routes } from 'react-router';
-import Dashboard from './components/dashboard/Dashboard.jsx';
-import SignUpPage from './components/signUpPage/signUpPage';
-import Demio from './components/Demio/Demio.jsx';
 
 function App() {
-
+const currentFont = useSelector((state)=> state.ui.font);
+let fontClass = "";
+  switch(currentFont){
+    case "Sans Serif":
+      fontClass = "font-inter";
+      break;
+    case "Serif":
+      fontClass = "font-noto";
+      break;
+    case "Mono":
+      fontClass = "font-mono";
+      break;
+    default:
+      fontClass = "font-sourcecode";   
+  }
+  
   return (
-    <div className='App font-inter'>
-      {/* <Routes> */}
-      {/* <LoginPage /> */}
-      {/* <Route path="/" element={<LoginPage />} />
+    <div className={`App ${fontClass}`}>
+      <Routes>
+      <Route path="/" element={<LoginPage />} />
       <Route path="/resetpassword" element={<ResetPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/home" element={<Dashboard />} />
-      <Route path="/demo" element={<Demio />} /> */}
-      
-      <Dashboard />
-      {/* </Routes> */}
+      </Routes>
     </div>
   )
 }
