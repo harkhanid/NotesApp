@@ -6,7 +6,7 @@ import SignUpPage from './components/signUpPage/SignUpPage.jsx';
 import LoginPage from './components/loginPage/LoginPage.jsx';
 import ResetPage from './components/resetPage/ResetPage.jsx';
 
-import './Fonts.css'
+import './fonts.css'
 import './App.css'
 
 function App() {
