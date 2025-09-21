@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
 import "./LoginPage.css";
@@ -22,6 +23,7 @@ const LoginPage = () => {
           </div>
           <input type="password" id="password" name="password" required />
         </div>
+        
         <button type="submit" className="btn btn-primary full-width preset-3">
           Login
         </button>
