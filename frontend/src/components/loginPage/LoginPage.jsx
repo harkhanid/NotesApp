@@ -3,6 +3,7 @@ import "./loginPage.css";
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
 import "./LoginPage.css";
+
 const LoginPage = () => {
   const [resetPassword, setResetPassword] = React.useState(false);
   const toggleResetPassword = () => {
