@@ -12,8 +12,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.dharmikharkhani.notes.auth.security.CustomOAuth2UserService;
 import com.dharmikharkhani.notes.auth.security.JwtAuthFilter;
 import com.dharmikharkhani.notes.auth.security.JwtUtil;
+import com.dharmikharkhani.notes.auth.security.OAuth2AuthenticationSuccessHandler;
 import com.dharmikharkhani.notes.auth.service.CustomUserDetailsService;
 
 
@@ -23,10 +25,17 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
+    private final CustomOAuth2UserService customOauth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil, 
+    		CustomOAuth2UserService customOauth2UserService,
+    		OAuth2AuthenticationSuccessHandler oauth2SuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
+		this.customOauth2UserService = customOauth2UserService;
+		this.oauth2SuccessHandler = oauth2SuccessHandler;
     }
 
     @Bean
@@ -54,14 +63,22 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/auth/**", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
                 .anyRequest().authenticated()
             )
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(u -> u.userService(customOauth2UserService))
+                .successHandler(oauth2SuccessHandler)
+            )
+            // This is the key change to prevent redirects
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
+            )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
+            
         return http.build();
     }
 }

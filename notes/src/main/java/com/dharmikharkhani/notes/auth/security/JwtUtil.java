@@ -24,11 +24,11 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String username, String roles, String authProvider) {
+    public String generateToken(String email, String roles, String authProvider) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setId(UUID.randomUUID().toString())
                 .setIssuedAt(now)
                 .setExpiration(exp)
@@ -47,7 +47,7 @@ public class JwtUtil {
         }
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                    .parseClaimsJws(token).getBody().getSubject();
     }

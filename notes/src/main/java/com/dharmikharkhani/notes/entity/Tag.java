@@ -17,8 +17,32 @@ public class Tag {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // globally unique
+    private String name;
 
     @ManyToMany(mappedBy = "tags")
     private Set<Note> notes = new HashSet<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Set<Note> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(Set<Note> notes) {
+        this.notes = notes;
+    }
 }

@@ -30,6 +30,7 @@ let fontClass = "";
     <div className={`App ${fontClass}`}>
       <Routes>
       <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/resetpassword" element={<ResetPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/home" element={<Dashboard />} />

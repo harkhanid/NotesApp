@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
 
@@ -21,16 +20,16 @@ public class CustomUserDetailsService implements UserDetailsService{
 
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		// TODO Auto-generated method stub
-		User u = repo.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+		User u = repo.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 		var authorities = (u.getRoles() == null || u.getRoles().isBlank())
 	            ? Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))
 	                    : Arrays.stream(u.getRoles().split(","))
 		                    .map(String::trim)
 		                    .map(SimpleGrantedAuthority::new)
 		                    .collect(Collectors.toList());
-		return new org.springframework.security.core.userdetails.User(u.getUsername(), u.getPassword(), authorities);
+		return new org.springframework.security.core.userdetails.User(u.getEmail(), u.getPassword(), authorities);
 	}
     
 }

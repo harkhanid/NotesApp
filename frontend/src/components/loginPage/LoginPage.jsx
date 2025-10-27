@@ -35,7 +35,7 @@ const LoginPage = () => {
         <p>Google</p>
       </button>
       <hr />
-      <p className="center preset-5">No Account yet? <a href="/register">Sign up</a></p>
+      <p className="center preset-5">No Account yet? <a href="/signup">Sign up</a></p>
     </div>
   );
 
