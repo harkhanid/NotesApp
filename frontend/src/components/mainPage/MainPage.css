@@ -148,6 +148,10 @@
   display: none;
 }
 
+.mobile-hide-flex{
+  display: none;
+}
+
 
 @media (min-width: 75em) {
   .main-page{
@@ -158,6 +162,10 @@
 
   .mobile-hide{
     display: block;
+  }
+
+  .mobile-hide-flex{
+    display: flex;
   }
   
   .main-page_header{

@@ -15,11 +15,8 @@ export const uiSlice = createSlice({
   initialState: initialState,
   reducers: {
     updateFilter: (state, action) => {
-      console.log("Updating filter:", action.payload);
       const { filter } = action.payload;
-      if (filter != "TAG") {
-        state.selectedTag = "";
-      }
+      state.selectedTag = "";
       state.filter = filter;
     },
     setSearchNotes: (state, action) => {

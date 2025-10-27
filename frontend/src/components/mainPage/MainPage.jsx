@@ -34,7 +34,6 @@ const MainPage = () => {
       title="All Notes"
       break;
     case "ARCHIVED":
-      console.log("Setting title to archived");
       title="Archived Notes"
       break;
     case "SEARCH":
@@ -107,8 +106,8 @@ const MainPage = () => {
 
   return (
     <div className="main-page ">
-      <div className={`main-page_header ${currentNoteId == null ? "" : "mobile-hide" }`}>
-        <div className={`tag-topbar mobile-topbar ${displayBackPanel? "" :"mobile-hide" }`}>
+      <div className={`main-page_header ${currentNoteId == null ? "" : "mobile-hide-flex" }`}>
+        <div className={`tag-topbar mobile-topbarsaf ${displayBackPanel? "" :"mobile-hide" }`}>
           <button className="btn-none goback-btn" onClick={()=>{dispatch(selectTag({tag:""}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
         </div>
         <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
