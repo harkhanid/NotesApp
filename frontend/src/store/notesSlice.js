@@ -12,6 +12,22 @@ const initialState = {
   tags: ["Cooking", "Fitness"],
 };
 
+// -- Independent Async Thunks -- //
+export const updateANoteAsync = createAsyncThunk(
+  "notes/updateANoteAsync",
+  async (note) => {
+    return UpdateNoteLocalStorage(note);
+  }
+);
+
+export const addAnoteAsync = createAsyncThunk(
+  "notes/addAnoteAsync",
+  async (note) => {
+    return addNoteLocalStorage(note);
+  }
+);
+
+// -- Dependent Async Thunks -- //
 export const fetchAllNotesAsync = createAsyncThunk(
   "notes/fetchAllnotesAsync",
   async () => {
@@ -22,7 +38,6 @@ export const fetchAllNotesAsync = createAsyncThunk(
 export const searchNotesAsync = createAsyncThunk(
   "notes/searchNotesAsync",
   async (query) => {
-    console.log("Searching for:", query);
     const allNotes = getAllNotes();
     return allNotes
       .filter((note) => {
@@ -38,20 +53,7 @@ export const searchNotesAsync = createAsyncThunk(
   }
 );
 
-export const updateANoteAsync = createAsyncThunk(
-  "notes/updateANoteAsync",
-  async (note) => {
-    return UpdateNoteLocalStorage(note);
-  }
-);
-
-export const addAnoteAsync = createAsyncThunk(
-  "notes/addAnoteAsync",
-  async (note) => {
-    return addNoteLocalStorage(note);
-  }
-);
-
+// -- Notes Slice -- //
 export const notesSlice = createSlice({
   name: "notes",
   initialState: initialState,

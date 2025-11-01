@@ -7,14 +7,6 @@ import { MENU } from "../constants/constants.js";
 export const getAllNotes = (selectedPage) => {
   const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
   return listNotes;
-  // if (MENU.ALL_NOTES == selectedPage)
-  //   return listNotes.filter((note) => !note.archived);
-  // if (MENU.ARCHIEVD_NOTES == selectedPage)
-  //   return listNotes.filter((note) => note.archived);
-  // //checking for notes with tags
-  // return listNotes
-  //   .filter((note) => note.tags.includes(selectedPage))
-  //   .map(({ content, ...rest }) => rest);
 };
 
 export const addNewNote = (note) => {
