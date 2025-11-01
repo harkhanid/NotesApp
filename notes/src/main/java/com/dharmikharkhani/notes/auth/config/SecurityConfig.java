@@ -21,6 +21,7 @@ import com.dharmikharkhani.notes.auth.service.CustomUserDetailsService;
 
 @Configuration
 @EnableMethodSecurity
+@Profile("!test")
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;

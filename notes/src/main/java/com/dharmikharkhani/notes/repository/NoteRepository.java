@@ -14,4 +14,7 @@ public interface NoteRepository extends JpaRepository<Note, UUID>{
     Optional<Note> findByIdAndOwner(UUID id, User owner);
 
     List<Note> findByOwner(User owner);
+
+    @Query("SELECT n FROM Note n WHERE (n.owner = :user OR :user MEMBER OF n.sharedWith) AND (n.title LIKE %:keyword% OR n.content LIKE %:keyword%)")
+    List<Note> searchNotesByKeyword(@Param("user") User user, @Param("keyword") String keyword);
 }

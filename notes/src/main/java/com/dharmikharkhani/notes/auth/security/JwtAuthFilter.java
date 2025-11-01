@@ -1,5 +1,4 @@
 package com.dharmikharkhani.notes.auth.security;
-
 import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,6 +27,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		 SecurityContextHolder.clearContext();
 		 final String authHeader = request.getHeader("Authorization");
 	        String email = null;
 	        String token = null;

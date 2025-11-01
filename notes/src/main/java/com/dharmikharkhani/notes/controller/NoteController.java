@@ -39,7 +39,7 @@ public class NoteController {
     }
 
     @PostMapping("/notes")
-    public ResponseEntity<NoteResponseDTO> createNote(Authentication authentication, @RequestBody Note newNote) {
+    public ResponseEntity<NoteResponseDTO> createNote(Authentication authentication, @RequestBody NoteRequestDTO newNote) {
         String userEmail = authentication.getName();
         Note savedNote = noteService.createNote(newNote, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(NoteResponseDTO.from(savedNote));
@@ -62,5 +62,11 @@ public class NoteController {
         }
         noteService.deleteNote(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/notes/search")
+    public ResponseEntity<List<NoteResponseDTO>> searchNotes(Authentication authentication, @RequestParam String keyword) {
+        List<NoteResponseDTO> notes = noteService.searchNotes(authentication, keyword);
+        return ResponseEntity.ok(notes);
     }
 }
