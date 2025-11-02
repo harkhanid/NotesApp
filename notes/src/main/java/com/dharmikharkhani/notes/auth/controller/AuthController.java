@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
 import com.dharmikharkhani.notes.auth.security.JwtUtil;
+import com.dharmikharkhani.notes.dto.UserResponseDTO;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -64,5 +67,14 @@ public class AuthController {
 	        User u = userRepo.findByEmail(email).orElseThrow();
 	        String token = jwtUtil.generateToken(u.getUsername(), u.getRoles(), "LOCAL");
 	        return ResponseEntity.ok(Map.of("token", token));
+	    }
+
+	    @GetMapping("/profile")
+	    public ResponseEntity<?> getProfile(Authentication authentication) {
+	        if (authentication == null || !authentication.isAuthenticated()) {
+	            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+	        }
+	        User user = userRepo.findByEmail(authentication.getName()).orElseThrow();
+	        return ResponseEntity.ok(new UserResponseDTO(user.getId(), user.getEmail()));
 	    }
 }

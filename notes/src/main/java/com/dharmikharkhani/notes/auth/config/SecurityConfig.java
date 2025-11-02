@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.dharmikharkhani.notes.auth.security.CustomOAuth2UserService;
 import com.dharmikharkhani.notes.auth.security.JwtAuthFilter;
@@ -28,15 +29,18 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CustomOAuth2UserService customOauth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+    private final CorsConfigurationSource corsConfigurationSource;
 
 
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil, 
     		CustomOAuth2UserService customOauth2UserService,
-    		OAuth2AuthenticationSuccessHandler oauth2SuccessHandler) {
+    		OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
+            CorsConfigurationSource corsConfigurationSource) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
 		this.customOauth2UserService = customOauth2UserService;
 		this.oauth2SuccessHandler = oauth2SuccessHandler;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -63,11 +67,12 @@ public class SecurityConfig {
         JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtUtil, userDetailsService);
 
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
+                    .requestMatchers("/api/auth/login","/api/auth/register", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
