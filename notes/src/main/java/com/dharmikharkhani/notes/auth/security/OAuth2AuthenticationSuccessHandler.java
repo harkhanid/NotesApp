@@ -35,7 +35,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), "GOOGLE");
 
         // Set HttpOnly cookie (recommended) - adjust domain/path/secure in prod
-        Cookie cookie = new Cookie("ACCESS_TOKEN", token);
+        Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
         cookie.setSecure(false); // true in production (HTTPS)
         cookie.setPath("/");

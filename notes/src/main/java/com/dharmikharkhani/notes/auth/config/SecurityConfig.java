@@ -1,5 +1,6 @@
 package com.dharmikharkhani.notes.auth.config;
 
+import com.dharmikharkhani.notes.auth.security.StatelessAuthorizationRequestRepository;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -30,17 +31,19 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOauth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final StatelessAuthorizationRequestRepository statelessAuthorizationRequestRepository;
 
 
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil, 
     		CustomOAuth2UserService customOauth2UserService,
     		OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
-            CorsConfigurationSource corsConfigurationSource) {
+            CorsConfigurationSource corsConfigurationSource, StatelessAuthorizationRequestRepository statelessAuthorizationRequestRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
 		this.customOauth2UserService = customOauth2UserService;
 		this.oauth2SuccessHandler = oauth2SuccessHandler;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.statelessAuthorizationRequestRepository = statelessAuthorizationRequestRepository;
     }
 
     @Bean
@@ -69,13 +72,14 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/login","/api/auth/register", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(a -> a.authorizationRequestRepository(statelessAuthorizationRequestRepository))
                 .userInfoEndpoint(u -> u.userService(customOauth2UserService))
                 .successHandler(oauth2SuccessHandler)
             )
