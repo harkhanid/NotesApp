@@ -26,7 +26,6 @@ const MainPage = () => {
   const timeoutNoteUpdateRef = useRef(null);
   const timeoutSearchUpdateRef = useRef(null);
 
-
   let preTitle= "";
   let displayBackPanel = false;
   switch(currentFilter){
@@ -107,7 +106,7 @@ const MainPage = () => {
   return (
     <div className="main-page ">
       <div className={`main-page_header ${currentNoteId == null ? "" : "mobile-hide-flex" }`}>
-        <div className={`tag-topbar mobile-topbarsaf ${displayBackPanel? "" :"mobile-hide" }`}>
+        <div className={`tag-topbar mobile-topbar ${displayBackPanel? "" :"mobile-hide" }`}>
           <button className="btn-none goback-btn" onClick={()=>{dispatch(selectTag({tag:""}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
         </div>
         <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
@@ -124,7 +123,7 @@ const MainPage = () => {
         </>:
         <>
           <InnerSideBar />
-          <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "mobile-show" }` }>
+          <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "" }` }>
             <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               <div className="top-bar-right">

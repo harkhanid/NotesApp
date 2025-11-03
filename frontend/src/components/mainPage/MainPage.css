@@ -139,11 +139,6 @@
   outline: none;
 }
 
-
-.mobile-show{
-  display: block;
-}
-
 .mobile-hide{
   display: none;
 }
@@ -167,6 +162,7 @@
   .mobile-hide-flex{
     display: flex;
   }
+
   
   .main-page_header{
     grid-column: 1/end;

@@ -1,5 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+
 import SunIcon from "../../assets/images/icon-sun.svg?react";
 import MoonIcon from "../../assets/images/icon-moon.svg?react";
 import SystemThemeIcon from "../../assets/images/icon-system-theme.svg?react";
@@ -11,7 +13,8 @@ import FontMonoIcon from "../../assets/images/icon-font-monospace.svg?react";
 import LeftArrowIcon from "../../assets/images/icon-arrow-left.svg?react";
 import LockIcon from "../../assets/images/icon-lock.svg?react";
 import LogoutIcon from "../../assets/images/icon-logout.svg?react";
-import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.js";
+import { logout } from "../../store/authSlice";
+
 import { updateTheme, updateFont } from "../../store/uiSlice.js";
 import "./InnerSideBar.css";
 
@@ -19,6 +22,7 @@ import "./InnerSideBar.css";
 
 const SettingsBar = () => {
   const dispatch  = useDispatch();
+  const navigate = useNavigate();
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const currentTheme = useSelector((state)=> state.ui.theme);
   const currentFont = useSelector((state)=> state.ui.font);
@@ -40,6 +44,19 @@ const SettingsBar = () => {
   ]
   let Title = "";
   let description = "";
+
+  const handleLogout = () => {
+      dispatch(logout()).then(() => navigate("/login"));
+  };
+
+
+  const handleCurrentSettingChange = (item) => {
+    if(item.name === "Logout"){
+      handleLogout();
+    }else{
+      setCurrentSetting(item.name);
+    }
+}
   switch(currentSetting){
     case "Color Theme":
       Title="Color Theme";
@@ -63,7 +80,7 @@ const SettingsBar = () => {
           {settingsContent.map((item, index) => {
             const IconComponent = item.icon;
             return (
-              <li key={index} onClick={()=>{setCurrentSetting(item.name)}} className={`sidebar-item ${currentSetting == item.name? "selected":""}`}>
+              <li key={index} onClick={()=>{handleCurrentSettingChange(item);}} className={`sidebar-item ${currentSetting == item.name? "selected":""}`}>
                 <IconComponent className={`icon ${item.className}`} />
                 <span>{item.name}</span>
               </li>
@@ -141,3 +158,5 @@ const SettingsBar = () => {
   )
 }
 export default SettingsBar;
+
+

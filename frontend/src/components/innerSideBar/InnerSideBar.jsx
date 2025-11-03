@@ -81,7 +81,7 @@ const InnerSideBar = () => {
   }
 
   return (
-    <div className={`inner-sidebar ${currentNoteId == null ? "mobile-show" : "mobile-hide" }` } >
+    <div className={`inner-sidebar ${currentNoteId == null ? "" : "mobile-hide" }` } >
       {tagFromStore.length == 0 && currentFilter == "TAG" &&
       <ul className="tags-list flow-content xxs-spacer">
         {
