@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/api";
+import { API_DOMAIN } from "../constants/constants.js";
+
+const API_URL = `${API_DOMAIN}/api`;
 
 const getAllNotes = () => {
   return fetch(`${API_URL}/notes`, {
@@ -14,22 +16,72 @@ const getTags = () => {
   });
 };
 
-const addNewNote = (note) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  listNotes.unshift(note);
-  localStorage.setItem("notes", JSON.stringify(listNotes));
+const addNewNote = async (note) => {
+  const response = await fetch(`${API_URL}/notes`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: note.title,
+      content: note.content,
+      tags: note.tags || [],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create note: ${response.status}`);
+  }
+
+  return await response.json();
 };
 
-const updateNote = (note) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  console.log(listNotes, note);
-  const newNoteList = listNotes.map((n) => (n.id == note.id ? note : n));
-  localStorage.setItem("notes", JSON.stringify(newNoteList));
+const updateNote = async (note) => {
+  const response = await fetch(`${API_URL}/notes/${note.id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: note.title,
+      content: note.content,
+      tags: note.tags || [],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update note: ${response.status}`);
+  }
+
+  return await response.json();
 };
 
-const getNote = (id) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  return listNotes.filter((note) => note.id == id);
+const deleteNote = async (id) => {
+  const response = await fetch(`${API_URL}/notes/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete note: ${response.status}`);
+  }
+
+  return { id };
+};
+
+const searchNotes = async (keyword) => {
+  const response = await fetch(`${API_URL}/notes/search?keyword=${encodeURIComponent(keyword)}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to search notes: ${response.status}`);
+  }
+
+  return await response.json();
 };
 
 const notesService = {
@@ -37,7 +89,8 @@ const notesService = {
     getTags,
     addNewNote,
     updateNote,
-    getNote,
+    deleteNote,
+    searchNotes,
 };
 
 export default notesService;

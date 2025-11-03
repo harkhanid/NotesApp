@@ -65,10 +65,10 @@ const InnerSideBar = () => {
       content:""
     }
     const addNote = addAnote(newNote);
+    const tempId = addNote.payload.id;
     dispatch(addNote);
-    dispatch(setCurrentNote({id: addNote.payload.id}));
-    dispatch(addAnoteAsync({...addNote.payload}));
-
+    dispatch(setCurrentNote({id: tempId}));
+    dispatch(addAnoteAsync({ note: addNote.payload, tempId }));
   }
   const setTag = (tag)=>{
       dispatch(selectTag({tag}));

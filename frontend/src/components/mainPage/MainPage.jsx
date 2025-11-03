@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync } from "../../store/notesSlice.js";
+import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync } from "../../store/notesSlice.js";
 import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -72,10 +72,12 @@ const MainPage = () => {
     if (timeoutNoteUpdateRef.current) {
       clearTimeout(timeoutNoteUpdateRef.current);
     }
+    const previousNote = { ...currentNote };
+    const updatedNote = { ...currentNote, content: html, id: id };
     timeoutNoteUpdateRef.current = setTimeout(() => {
-      dispatch(updateNote({ ...currentNote, content: html, id: id }));
-      dispatch(updateANoteAsync({ ...currentNote, content: html, id: id }))
-    }, 1000); 
+      dispatch(updateNote(updatedNote));
+      dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
+    }, 1000);
   };
 
  const handleKeyPress = (e) => {
@@ -90,15 +92,28 @@ const MainPage = () => {
 };
   
   const toggleArchive = () => {
-    dispatch(updateNote({...currentNote, archiveFlag: true}));
-    dispatch(updateANoteAsync({ ...currentNote, archiveFlag: true }))
-
+    const previousNote = { ...currentNote };
+    const updatedNote = {...currentNote, archiveFlag: true};
+    dispatch(updateNote(updatedNote));
+    dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
   }
 
   const updateTitle = (title) =>{
-    dispatch(updateNote({...currentNote, title:title}));
-    dispatch(updateANoteAsync({ ...currentNote, title:title }))
-}
+    const previousNote = { ...currentNote };
+    const updatedNote = {...currentNote, title:title};
+    dispatch(updateNote(updatedNote));
+    dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
+  }
+
+  const handleDelete = () => {
+    if (!currentNote) return;
+    const noteData = { ...currentNote };
+    // Optimistic delete
+    dispatch(deleteNote({ id: currentNoteId }));
+    dispatch(setCurrentNote({ id: null }));
+    // Background API call
+    dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
+  }
 
   
   
@@ -128,7 +143,7 @@ const MainPage = () => {
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               <div className="top-bar-right">
                 <button className="btn-none" onClick={toggleArchive}><ArchiveIcon /></button>
-                <button className="btn-none"><DeleteIcon /></button>
+                <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
               </div>
             </div>
             {currentNote && 
@@ -159,7 +174,7 @@ const MainPage = () => {
       }
       <div className="right-sidebar flow-content">
         <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
-        <button className="btn full-width split preset-4"><DeleteIcon /><p>Delete Note</p></button>
+        <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
       </div>
     </div>
   );
