@@ -1,45 +1,63 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import {
-  getAllNotes,
-  updateNote as UpdateNoteLocalStorage,
-  addNewNote as addNoteLocalStorage,
-} from "../Service/notesService";
+import notesService from "../Service/notesService";
+
 const initialState = {
   byId: {},
   allIds: [],
   searchIds: [],
   currentId: null,
-  tags: ["Cooking", "Fitness"],
+  tags: [],
+  loading: false,
+  error: null,
 };
 
-// -- Independent Async Thunks -- //
+export const getTagsAsync = createAsyncThunk(
+  "notes/getTags",
+  async (_, thunkAPI) => {
+    try {
+      const response = await notesService.getTags();
+      if (!response.ok) throw new Error("Failed to fetch tags.");
+      return await response.json();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchAllNotesAsync = createAsyncThunk(
+  "notes/fetchAllNotes",
+  async (_, thunkAPI) => {
+    try {
+      const response = await notesService.getAllNotes();
+      if (!response.ok) throw new Error("Failed to fetch notes.");
+      return await response.json();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+// ... (keeping existing optimistic thunks and reducers as they are)
 export const updateANoteAsync = createAsyncThunk(
   "notes/updateANoteAsync",
   async (note) => {
-    return UpdateNoteLocalStorage(note);
+    return notesService.updateNote(note);
   }
 );
 
 export const addAnoteAsync = createAsyncThunk(
   "notes/addAnoteAsync",
   async (note) => {
-    return addNoteLocalStorage(note);
-  }
-);
-
-// -- Dependent Async Thunks -- //
-export const fetchAllNotesAsync = createAsyncThunk(
-  "notes/fetchAllnotesAsync",
-  async () => {
-    return getAllNotes();
+    return notesService.addNewNote(note);
   }
 );
 
 export const searchNotesAsync = createAsyncThunk(
   "notes/searchNotesAsync",
   async (query) => {
-    const allNotes = getAllNotes();
-    return allNotes
+    const allNotes = await notesService.getAllNotes();
+    const notes = await allNotes.json();
+    return notes
       .filter((note) => {
         if (!query || query.length == 0) return false;
         const q = query.toLowerCase();
@@ -53,7 +71,7 @@ export const searchNotesAsync = createAsyncThunk(
   }
 );
 
-// -- Notes Slice -- //
+
 export const notesSlice = createSlice({
   name: "notes",
   initialState: initialState,
@@ -78,6 +96,7 @@ export const notesSlice = createSlice({
     },
     deleteNote: (state, action) => {
       const { id } = action.payload;
+      delete state.byId[id];
       state.allIds = state.allIds.filter((nid) => nid != id);
     },
     setCurrentNote: (state, action) => {
@@ -95,13 +114,12 @@ export const notesSlice = createSlice({
           state.byId[note.id] = note;
           state.allIds.push(note.id);
         });
-        // if (notes.length > 0 && state.currentId == null) {
-        //   state.currentId = notes[0].id;
-        // }
       })
       .addCase(searchNotesAsync.fulfilled, (state, action) => {
-        const searchIds = action.payload;
-        state.searchIds = searchIds;
+        state.searchIds = action.payload;
+      })
+      .addCase(getTagsAsync.fulfilled, (state, action) => {
+        state.tags = action.payload;
       });
   },
 });
