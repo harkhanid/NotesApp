@@ -3,6 +3,7 @@ package com.dharmikharkhani.notes.auth.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +31,12 @@ public class AuthController {
 	    private final BCryptPasswordEncoder passwordEncoder;
 	    private final AuthenticationManager authenticationManager;
 	    private final JwtUtil jwtUtil;
+
+	    @Value("${app.cookie.secure}")
+	    private boolean cookieSecure;
+
+	    @Value("${app.cookie.same-site}")
+	    private String cookieSameSite;
 
 	    public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
 	                          AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
@@ -70,8 +77,8 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie.from("token", token)
                     .path("/")
                     .httpOnly(true)
-                    .sameSite("None")
-                    .secure(true) // true in prod
+                    .sameSite(cookieSameSite)
+                    .secure(cookieSecure)
                     .build();
 			response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	        return ResponseEntity.ok(Map.of("status", "success"));
@@ -91,8 +98,8 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie.from("token", "")
                     .path("/")
                     .httpOnly(true)
-                    .sameSite("None")
-                    .secure(true)
+                    .sameSite(cookieSameSite)
+                    .secure(cookieSecure)
                     .maxAge(0)
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());

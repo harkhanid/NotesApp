@@ -139,6 +139,31 @@
   outline: none;
 }
 
+.tags-input-wrapper{
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.tags-input-wrapper .ProseMirror{
+  flex: 1;
+  cursor: text;
+  min-height: 1.2rem;
+  outline: none;
+  font-size: var(--fs-350);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--clr-neutral-950);
+}
+
+.tags-input-wrapper .ProseMirror.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--clr-neutral-400);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
 .mobile-hide{
   display: none;
 }

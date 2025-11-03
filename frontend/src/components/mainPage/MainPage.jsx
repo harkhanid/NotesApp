@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync } from "../../store/notesSlice.js";
+import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync } from "../../store/notesSlice.js";
 import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
 
 import { useDispatch, useSelector } from "react-redux";
 import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
 import HeadingEditor from "../editor/HeadingEditor.jsx";
 import Editor from "../editor/Editor.jsx";
+import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
@@ -25,6 +26,7 @@ const MainPage = () => {
   let title = "";
   const timeoutNoteUpdateRef = useRef(null);
   const timeoutSearchUpdateRef = useRef(null);
+  const timeoutTagUpdateRef = useRef(null);
 
   let preTitle= "";
   let displayBackPanel = false;
@@ -55,12 +57,14 @@ const MainPage = () => {
       title="";
   }
   console.log("Current Note:", currentFilter);
-  /* Debounce Destoyer on unmounting */
+  /* Debounce Destroyer on unmounting */
   useEffect(()=>{
     return ()=>{
       if(timeoutNoteUpdateRef.current){
         clearTimeout(timeoutNoteUpdateRef.current);
-        clearTimeout(timeoutNoteUpdateRef.current);
+      }
+      if(timeoutTagUpdateRef.current){
+        clearTimeout(timeoutTagUpdateRef.current);
       }
     }
   },[]);
@@ -105,6 +109,24 @@ const MainPage = () => {
     dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
   }
 
+  const handleTagsUpdate = (tags) => {
+    if (!currentNote) return;
+    if (timeoutTagUpdateRef.current) {
+      clearTimeout(timeoutTagUpdateRef.current);
+    }
+    // Optimistic update - update Redux state immediately
+    const previousNote = { ...currentNote };
+    const updatedNote = { ...currentNote, tags: tags };
+    dispatch(updateNote(updatedNote));
+
+    // Debounced API call
+    timeoutTagUpdateRef.current = setTimeout(async () => {
+      await dispatch(updateANoteAsync({ note: updatedNote, previousNote }));
+      // Refresh tags list after updating note
+      dispatch(getTagsAsync());
+    }, 500);
+  }
+
   const handleDelete = () => {
     if (!currentNote) return;
     const noteData = { ...currentNote };
@@ -146,7 +168,7 @@ const MainPage = () => {
                 <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
               </div>
             </div>
-            {currentNote && 
+            {currentNote &&
             <>
               <HeadingEditor initialContent={currentNote.title} onUpdate={updateTitle} />
                 <div className="note-metadata preset-5 flow-content xxs-spacer">
@@ -155,7 +177,9 @@ const MainPage = () => {
                       <TagIcon className="icon"/>
                       <p className="">Tags</p>
                     </div>
-                    <p className="">{currentNote?.tags?.join(", ")}</p>
+                    <div className="tags-input-wrapper">
+                      <TagEditor initialTags={currentNote.tags} onUpdate={handleTagsUpdate} />
+                    </div>
                   </div>
                   <div className="split">
                     <div className="split metadata_key">
@@ -172,10 +196,12 @@ const MainPage = () => {
           </div>
         </>
       }
-      <div className="right-sidebar flow-content">
-        <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
-        <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
-      </div>
+      {currentNoteId !== null && currentFilter !== "SETTINGS" && (
+        <div className="right-sidebar flow-content">
+          <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
+          <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
+        </div>
+      )}
     </div>
   );
 };

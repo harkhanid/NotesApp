@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {motion, Reorder} from "framer-motion";
 
@@ -55,7 +55,33 @@ const InnerSideBar = () => {
   }
 
   console.log(notesList);
-  
+
+  // Auto-select first note on desktop when filter changes
+  useEffect(() => {
+    // Skip auto-selection for SETTINGS view
+    if (currentFilter === "SETTINGS") return;
+
+    // Check if we're on desktop view (768px is common mobile breakpoint)
+    const isDesktop = window.innerWidth >= 768;
+
+    if (isDesktop) {
+      if (notesList.length > 0) {
+        // Check if current note is in the filtered list
+        const currentNoteInList = notesList.some(note => note.id === currentNoteId);
+
+        // If current note is not in the filtered list (or no note selected), select first note
+        if (!currentNoteInList) {
+          dispatch(setCurrentNote({ id: notesList[0].id }));
+        }
+      } else {
+        // No notes in the list, clear selection
+        if (currentNoteId !== null) {
+          dispatch(setCurrentNote({ id: null }));
+        }
+      }
+    }
+  }, [currentFilter, tagFromStore, searchIds, currentNoteId, dispatch]);
+
   const createNewNote = () =>{
     const newNote = {
       title:"",
