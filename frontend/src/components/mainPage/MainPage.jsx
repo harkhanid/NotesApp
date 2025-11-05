@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync } from "../../store/notesSlice.js";
+import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync } from "../../store/notesSlice.js";
 import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
 
 import { useDispatch, useSelector } from "react-redux";
 import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
 import HeadingEditor from "../editor/HeadingEditor.jsx";
 import Editor from "../editor/Editor.jsx";
+import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
@@ -25,7 +26,7 @@ const MainPage = () => {
   let title = "";
   const timeoutNoteUpdateRef = useRef(null);
   const timeoutSearchUpdateRef = useRef(null);
-
+  const timeoutTagUpdateRef = useRef(null);
 
   let preTitle= "";
   let displayBackPanel = false;
@@ -56,12 +57,14 @@ const MainPage = () => {
       title="";
   }
   console.log("Current Note:", currentFilter);
-  /* Debounce Destoyer on unmounting */
+  /* Debounce Destroyer on unmounting */
   useEffect(()=>{
     return ()=>{
       if(timeoutNoteUpdateRef.current){
         clearTimeout(timeoutNoteUpdateRef.current);
-        clearTimeout(timeoutNoteUpdateRef.current);
+      }
+      if(timeoutTagUpdateRef.current){
+        clearTimeout(timeoutTagUpdateRef.current);
       }
     }
   },[]);
@@ -73,10 +76,12 @@ const MainPage = () => {
     if (timeoutNoteUpdateRef.current) {
       clearTimeout(timeoutNoteUpdateRef.current);
     }
+    const previousNote = { ...currentNote };
+    const updatedNote = { ...currentNote, content: html, id: id };
     timeoutNoteUpdateRef.current = setTimeout(() => {
-      dispatch(updateNote({ ...currentNote, content: html, id: id }));
-      dispatch(updateANoteAsync({ ...currentNote, content: html, id: id }))
-    }, 1000); 
+      dispatch(updateNote(updatedNote));
+      dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
+    }, 1000);
   };
 
  const handleKeyPress = (e) => {
@@ -91,15 +96,46 @@ const MainPage = () => {
 };
   
   const toggleArchive = () => {
-    dispatch(updateNote({...currentNote, archiveFlag: true}));
-    dispatch(updateANoteAsync({ ...currentNote, archiveFlag: true }))
-
+    const previousNote = { ...currentNote };
+    const updatedNote = {...currentNote, archiveFlag: true};
+    dispatch(updateNote(updatedNote));
+    dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
   }
 
   const updateTitle = (title) =>{
-    dispatch(updateNote({...currentNote, title:title}));
-    dispatch(updateANoteAsync({ ...currentNote, title:title }))
-}
+    const previousNote = { ...currentNote };
+    const updatedNote = {...currentNote, title:title};
+    dispatch(updateNote(updatedNote));
+    dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
+  }
+
+  const handleTagsUpdate = (tags) => {
+    if (!currentNote) return;
+    if (timeoutTagUpdateRef.current) {
+      clearTimeout(timeoutTagUpdateRef.current);
+    }
+    // Optimistic update - update Redux state immediately
+    const previousNote = { ...currentNote };
+    const updatedNote = { ...currentNote, tags: tags };
+    dispatch(updateNote(updatedNote));
+
+    // Debounced API call
+    timeoutTagUpdateRef.current = setTimeout(async () => {
+      await dispatch(updateANoteAsync({ note: updatedNote, previousNote }));
+      // Refresh tags list after updating note
+      dispatch(getTagsAsync());
+    }, 500);
+  }
+
+  const handleDelete = () => {
+    if (!currentNote) return;
+    const noteData = { ...currentNote };
+    // Optimistic delete
+    dispatch(deleteNote({ id: currentNoteId }));
+    dispatch(setCurrentNote({ id: null }));
+    // Background API call
+    dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
+  }
 
   
   
@@ -107,7 +143,7 @@ const MainPage = () => {
   return (
     <div className="main-page ">
       <div className={`main-page_header ${currentNoteId == null ? "" : "mobile-hide-flex" }`}>
-        <div className={`tag-topbar mobile-topbarsaf ${displayBackPanel? "" :"mobile-hide" }`}>
+        <div className={`tag-topbar mobile-topbar ${displayBackPanel? "" :"mobile-hide" }`}>
           <button className="btn-none goback-btn" onClick={()=>{dispatch(selectTag({tag:""}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
         </div>
         <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
@@ -124,15 +160,15 @@ const MainPage = () => {
         </>:
         <>
           <InnerSideBar />
-          <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "mobile-show" }` }>
+          <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "" }` }>
             <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               <div className="top-bar-right">
                 <button className="btn-none" onClick={toggleArchive}><ArchiveIcon /></button>
-                <button className="btn-none"><DeleteIcon /></button>
+                <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
               </div>
             </div>
-            {currentNote && 
+            {currentNote &&
             <>
               <HeadingEditor initialContent={currentNote.title} onUpdate={updateTitle} />
                 <div className="note-metadata preset-5 flow-content xxs-spacer">
@@ -141,7 +177,9 @@ const MainPage = () => {
                       <TagIcon className="icon"/>
                       <p className="">Tags</p>
                     </div>
-                    <p className="">{currentNote?.tags?.join(", ")}</p>
+                    <div className="tags-input-wrapper">
+                      <TagEditor initialTags={currentNote.tags} onUpdate={handleTagsUpdate} />
+                    </div>
                   </div>
                   <div className="split">
                     <div className="split metadata_key">
@@ -158,10 +196,12 @@ const MainPage = () => {
           </div>
         </>
       }
-      <div className="right-sidebar flow-content">
-        <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
-        <button className="btn full-width split preset-4"><DeleteIcon /><p>Delete Note</p></button>
-      </div>
+      {currentNoteId !== null && currentFilter !== "SETTINGS" && (
+        <div className="right-sidebar flow-content">
+          <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
+          <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
+        </div>
+      )}
     </div>
   );
 };

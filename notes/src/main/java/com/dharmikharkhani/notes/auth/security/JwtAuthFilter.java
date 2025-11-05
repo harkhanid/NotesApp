@@ -1,5 +1,4 @@
 package com.dharmikharkhani.notes.auth.security;
-
 import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +11,7 @@ import com.dharmikharkhani.notes.auth.service.CustomUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -28,15 +28,21 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		 SecurityContextHolder.clearContext();
 		 final String authHeader = request.getHeader("Authorization");
 	        String email = null;
 	        String token = null;
 
-	        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-	            token = authHeader.substring(7);
-	            if (jwtUtil.validateToken(token)) {
-	                email = jwtUtil.extractEmail(token);
+	        if (request.getCookies() != null) {
+	            for (Cookie cookie : request.getCookies()) {
+	                if (cookie.getName().equals("token")) {
+	                    token = cookie.getValue();
+	                }
 	            }
+	        }
+
+	        if (token != null && jwtUtil.validateToken(token)) {
+	            email = jwtUtil.extractEmail(token);
 	        }
 
 	        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {

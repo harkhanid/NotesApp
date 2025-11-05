@@ -1,74 +1,60 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../store/authSlice";
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
 import "./LoginPage.css";
 
 const LoginPage = () => {
-  const [resetPassword, setResetPassword] = React.useState(false);
-  const toggleResetPassword = () => {
-    setResetPassword(!resetPassword);
-  };
-  const loginContainer = (
-    <div className="login-container flow-content">
-      <form className="login-form flow-content">
-        <div className="form-group flow-content xxs-spacer">
-          <label htmlFor="email" className="block preset-4">Email Address</label>
-          <input type="email" id="email" name="email" placeholder="email@example.com" required />
-        </div>
-        <div className="form-group flow-content xxs-spacer">
-          <div className="split password-label">
-            <label htmlFor="password" className="preset-4" >Password</label>{" "}
-            <a onClick="toggleResetPassword">Forgot?</a>
-          </div>
-          <input type="password" id="password" name="password" required />
-        </div>
-        
-        <button type="submit" className="btn btn-primary full-width preset-3">
-          Login
-        </button>
-      </form>
-      <hr />
-      <p className="preset-5 center">Or log in with:</p>
-      <button className="google-login btn btn-secondary split full-width preset-3">
-        <img src={googleIcon} alt="Google Icon" />
-        <p>Google</p>
-      </button>
-      <hr />
-      <p className="center preset-5">No Account yet? <a href="/signup">Sign up</a></p>
-    </div>
-  );
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
-  const resetPasswordContainer = (
-    <div className="reset-password-container flow-content">
-      <form className="reset-password-form flow-content">
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-        <button type="submit" className="btn btn-primary full-width preset-3">
-          Send Reset Link
-        </button>
-      </form>
-    </div>
-  );
-  
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    dispatch(login({ email, password }));
+  };
+
   return (
     <div className="auth-page">
       <div className="card flow-content">
         <img src={logo} className="logo" alt="Logo" />
         <div className="card-text">
-        <p className="title preset-1">
-          {resetPassword ? "Forgotten your password?" : "Welcome to Notes"}
-        </p>
-        <p className="preset-5 sub-title">
-          {resetPassword
-            ? "Enter your email below, and we’ll send you a link to reset it."
-            : "Please login to continue"}
-        </p>
+          <p className="title preset-1">Welcome to Notes</p>
+          <p className="preset-5 sub-title">Please login to continue</p>
         </div>
-        {resetPassword ? resetPasswordContainer : loginContainer}
-        </div>
+        <form className="login-form flow-content" onSubmit={handleLogin}>
+          <div className="form-group flow-content xxs-spacer">
+            <label htmlFor="email" className="block preset-4">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="email@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="form-group flow-content xxs-spacer">
+            <label htmlFor="password" className="preset-4">Password</label>
+            <input type="password" id="password" name="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          {error && <p className="preset-5 error-message">{typeof error === 'object' ? JSON.stringify(error) : error}</p>}
+          <button type="submit" className="btn btn-primary full-width preset-3" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <hr />
+        <p className="preset-5 center">Or log in with:</p>
+        <button className="google-login btn btn-secondary split full-width preset-3">
+          <img src={googleIcon} alt="Google Icon" />
+          <p>Google</p>
+        </button>
+        <hr />
+        <p className="center preset-5">No Account yet? <Link to="/signup">Sign up</Link></p>
+      </div>
     </div>
   );
 };

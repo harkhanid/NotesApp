@@ -1,36 +1,96 @@
-import { MENU } from "../constants/constants.js";
+import { API_DOMAIN } from "../constants/constants.js";
 
-// Method: Get all notes from local storage
-// Input: selectedPage - page to filter notes
-// Output format: [{id, title, content, tags, date, archived}, ...]
+const API_URL = `${API_DOMAIN}/api`;
 
-export const getAllNotes = (selectedPage) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  return listNotes;
-  // if (MENU.ALL_NOTES == selectedPage)
-  //   return listNotes.filter((note) => !note.archived);
-  // if (MENU.ARCHIEVD_NOTES == selectedPage)
-  //   return listNotes.filter((note) => note.archived);
-  // //checking for notes with tags
-  // return listNotes
-  //   .filter((note) => note.tags.includes(selectedPage))
-  //   .map(({ content, ...rest }) => rest);
+const getAllNotes = () => {
+  return fetch(`${API_URL}/notes`, {
+    method: "GET",
+    credentials: "include",
+  });
 };
 
-export const addNewNote = (note) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  listNotes.unshift(note);
-  localStorage.setItem("notes", JSON.stringify(listNotes));
+const getTags = () => {
+  return fetch(`${API_URL}/tags`, {
+    method: "GET",
+    credentials: "include",
+  });
 };
 
-export const updateNote = (note) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  console.log(listNotes, note);
-  const newNoteList = listNotes.map((n) => (n.id == note.id ? note : n));
-  localStorage.setItem("notes", JSON.stringify(newNoteList));
+const addNewNote = async (note) => {
+  const response = await fetch(`${API_URL}/notes`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: note.title,
+      content: note.content,
+      tags: note.tags || [],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create note: ${response.status}`);
+  }
+
+  return await response.json();
 };
 
-export const getNote = (id) => {
-  const listNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-  return listNotes.filter((note) => note.id == id);
+const updateNote = async (note) => {
+  const response = await fetch(`${API_URL}/notes/${note.id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: note.title,
+      content: note.content,
+      tags: note.tags || [],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update note: ${response.status}`);
+  }
+
+  return await response.json();
 };
+
+const deleteNote = async (id) => {
+  const response = await fetch(`${API_URL}/notes/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete note: ${response.status}`);
+  }
+
+  return { id };
+};
+
+const searchNotes = async (keyword) => {
+  const response = await fetch(`${API_URL}/notes/search?keyword=${encodeURIComponent(keyword)}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to search notes: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
+const notesService = {
+    getAllNotes,
+    getTags,
+    addNewNote,
+    updateNote,
+    deleteNote,
+    searchNotes,
+};
+
+export default notesService;

@@ -2,6 +2,7 @@ package com.dharmikharkhani.notes.auth.security;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -20,6 +21,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 	 private final JwtUtil jwtUtil;
 	 private final UserRepository userRepo;
 
+	 @Value("${app.frontend.url}")
+	 private String frontendUrl;
+
+	 @Value("${app.cookie.secure}")
+	 private boolean cookieSecure;
+
 	 public OAuth2AuthenticationSuccessHandler(JwtUtil jwtUtil, UserRepository userRepo) {
         this.jwtUtil = jwtUtil;
         this.userRepo = userRepo;
@@ -34,13 +41,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         User user = userRepo.findByEmail(email).orElseGet(()-> userRepo.save(new User(null, email, email, "","ROLE_user","GOOGLE")));
         String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), "GOOGLE");
 
-        // Set HttpOnly cookie (recommended) - adjust domain/path/secure in prod
-        Cookie cookie = new Cookie("ACCESS_TOKEN", token);
+        // Set HttpOnly cookie with environment-based security settings
+        Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // true in production (HTTPS)
+        cookie.setSecure(cookieSecure);
         cookie.setPath("/");
         cookie.setMaxAge((int)(3600)); // seconds
         response.addCookie(cookie);
-        response.sendRedirect("http://localhost:5173/home");
+        response.sendRedirect(frontendUrl + "/home");
         }
 }
