@@ -3,6 +3,7 @@ package com.dharmikharkhani.notes.controller;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
 import com.dharmikharkhani.notes.dto.NoteRequestDTO;
 import com.dharmikharkhani.notes.dto.NoteResponseDTO;
+import com.dharmikharkhani.notes.dto.ShareNoteRequestDTO;
 import com.dharmikharkhani.notes.entity.Note;
 import com.dharmikharkhani.notes.repository.NoteRepository;
 import com.dharmikharkhani.notes.service.AuthorizationService;
@@ -68,5 +69,25 @@ public class NoteController {
     public ResponseEntity<List<NoteResponseDTO>> searchNotes(Authentication authentication, @RequestParam String keyword) {
         List<NoteResponseDTO> notes = noteService.searchNotes(authentication, keyword);
         return ResponseEntity.ok(notes);
+    }
+
+    @PostMapping("/notes/{id}/share")
+    public ResponseEntity<NoteResponseDTO> shareNote(
+            Authentication authentication,
+            @PathVariable UUID id,
+            @RequestBody ShareNoteRequestDTO shareRequest) {
+        String userEmail = authentication.getName();
+        NoteResponseDTO note = noteService.shareNote(id, shareRequest.emails(), userEmail);
+        return ResponseEntity.ok(note);
+    }
+
+    @DeleteMapping("/notes/{id}/collaborators/{email}")
+    public ResponseEntity<NoteResponseDTO> removeCollaborator(
+            Authentication authentication,
+            @PathVariable UUID id,
+            @PathVariable String email) {
+        String userEmail = authentication.getName();
+        NoteResponseDTO note = noteService.removeCollaborator(id, email, userEmail);
+        return ResponseEntity.ok(note);
     }
 }
