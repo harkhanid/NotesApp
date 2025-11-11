@@ -1,8 +1,8 @@
 import { useMemo, useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent, EditorContext } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
 import {
   getOrCreateDocument,
@@ -12,6 +12,16 @@ import {
 import authService from '../../Service/authService';
 import './Editor.css';
 
+const AUTOSAVE_DELAY_MS = 2000;
+
+/**
+ * Collaborative rich text editor component with real-time sync
+ * @param {Object} props
+ * @param {string} props.initialContent - Initial HTML content
+ * @param {Function} props.onUpdate - Callback for content updates (html, noteId)
+ * @param {string} props.id - Note ID
+ * @param {Object} props.currentUser - Current user object with username, email, color
+ */
 const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
   const [isCollaborationReady, setIsCollaborationReady] = useState(false);
   const ydocRef = useRef(null);
@@ -19,50 +29,40 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
   const syncHandlerRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
-  // Initialize collaboration ONCE per noteId
+  // Initialize collaboration when noteId changes
   useEffect(() => {
     if (!noteId) return;
 
     const initCollaboration = async () => {
-      console.log('🔧 Initializing collaboration for note:', noteId);
+      try {
+        const token = await authService.getWebSocketToken();
 
-      // Fetch JWT token for WebSocket authentication
-      const token = await authService.getWebSocketToken();
-
-      if (!token) {
-        console.error('❌ Failed to get WebSocket token - collaboration disabled');
-        return;
-      }
-
-      // Create Yjs document and provider with token
-      const doc = getOrCreateDocument(noteId);
-      const prov = getOrCreateProvider(noteId, doc, {
-        username: currentUser?.username || currentUser?.email || 'Anonymous',
-        email: currentUser?.email || '',
-        color: currentUser?.color || generateUserColor(currentUser?.email),
-      }, token); // Pass token to provider
-
-      ydocRef.current = doc;
-      providerRef.current = prov;
-
-      // Wait for provider to connect and sync before initializing editor
-      // This ensures the awareness and collaboration are ready
-      prov.on('synced', () => {
-        console.log('✅ Provider synced - collaboration fully ready');
-        setIsCollaborationReady(true);
-      });
-
-      prov.on('status', ({ status }) => {
-        console.log('📡 Provider status:', status);
-        if (status === 'connected') {
-          console.log('🔗 Provider connected to server');
+        if (!token) {
+          console.error('Failed to get WebSocket token - collaboration disabled');
+          return;
         }
-      });
+
+        const doc = getOrCreateDocument(noteId);
+        const prov = getOrCreateProvider(noteId, doc, {
+          username: currentUser?.username || currentUser?.email || 'Anonymous',
+          email: currentUser?.email || '',
+          color: currentUser?.color || generateUserColor(currentUser?.email),
+        }, token);
+
+        ydocRef.current = doc;
+        providerRef.current = prov;
+
+        // Wait for provider to sync before enabling collaboration features
+        prov.on('synced', () => {
+          setIsCollaborationReady(true);
+        });
+      } catch (error) {
+        console.error('Failed to initialize collaboration:', error);
+      }
     };
 
     initCollaboration();
 
-    // Cleanup on unmount or note change
     return () => {
       cleanupDocument(noteId);
       ydocRef.current = null;
@@ -78,17 +78,12 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
       disableCollaboration();
     },
     onCreate: ({ editor: currentEditor }) => {
-      console.log('📝 Editor created');
-      console.log('📝 Extensions loaded:', currentEditor.extensionManager.extensions.map(e => e.name));
-
-      const hasCursor = currentEditor.extensionManager.extensions.some(e => e.name === 'collaborationCursor');
-      console.log('🖱️ CollaborationCursor extension loaded:', hasCursor);
-
+      // Set initial content if editor is empty
       if (initialContent && currentEditor.isEmpty) {
-        console.log('📄 Setting initial content on create');
         currentEditor.commands.setContent(initialContent);
       }
 
+      // Handle sync event for subsequent content loading
       if (providerRef.current) {
         syncHandlerRef.current = () => {
           if (currentEditor.isEmpty && initialContent) {
@@ -99,26 +94,23 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
       }
     },
     onUpdate: ({ editor: currentEditor }) => {
+      // Clear previous autosave timeout
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
 
-      // Debounce save - wait 2 seconds after last change
+      // Debounced autosave to database
       saveTimeoutRef.current = setTimeout(async () => {
         const html = currentEditor.getHTML();
-        console.log('💾 Autosaving note to database...', { noteId });
 
         try {
           if (onUpdate && noteId) {
             onUpdate(html, noteId);
-            console.log('✅ Autosave successful');
-          } else {
-            console.error('❌ Cannot autosave: missing noteId or onUpdate callback');
           }
         } catch (error) {
-          console.error('❌ Autosave failed:', error);
+          console.error('Autosave failed:', error);
         }
-      }, 2000); // 2 second debounce
+      }, AUTOSAVE_DELAY_MS);
     },
     onDestroy: () => {
       if (providerRef.current && syncHandlerRef.current) {
@@ -130,14 +122,6 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
     },
     extensions: (() => {
       if (isCollaborationReady && ydocRef.current && providerRef.current) {
-        const cursorConfig = {
-          provider: providerRef.current,
-          user: {
-            name: currentUser?.username || currentUser?.email || 'Anonymous',
-            email: currentUser?.email || '',
-            color: currentUser?.color || generateUserColor(currentUser?.email),
-          }
-        };
         return [
           StarterKit.configure({
             history: false, // Yjs handles undo/redo
@@ -145,18 +129,25 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
           Collaboration.configure({
             document: ydocRef.current,
           }),
-          CollaborationCursor.configure(cursorConfig)
-        ];
-      } else {
-        console.log('⚠️ Collaboration not ready - loading basic extensions only');
-        return [
-          StarterKit.configure({
-            history: false,
-          }),
+          CollaborationCursor.configure({
+            provider: providerRef.current,
+            user: {
+              name: currentUser?.username || currentUser?.email || 'Anonymous',
+              email: currentUser?.email || '',
+              color: currentUser?.color || generateUserColor(currentUser?.email),
+            }
+          })
         ];
       }
+
+      // Fallback to basic extensions when collaboration is not ready
+      return [
+        StarterKit.configure({
+          history: false,
+        }),
+      ];
     })(),
-  }, [isCollaborationReady]); // Recreate editor when collaboration is ready
+  }, [isCollaborationReady]);
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
 
@@ -171,7 +162,11 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
   );
 };
 
-// Helper function to generate consistent color from email
+/**
+ * Generate a consistent color from email using hash
+ * @param {string} email - User email
+ * @returns {string} Hex color code
+ */
 const generateUserColor = (email) => {
   if (!email) {
     return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
