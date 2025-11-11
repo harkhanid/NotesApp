@@ -1,6 +1,9 @@
 package com.dharmikharkhani.notes.controller;
 
+import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
+import com.dharmikharkhani.notes.dto.CollaborationVerifyRequestDTO;
+import com.dharmikharkhani.notes.dto.CollaborationVerifyResponseDTO;
 import com.dharmikharkhani.notes.dto.NoteRequestDTO;
 import com.dharmikharkhani.notes.dto.NoteResponseDTO;
 import com.dharmikharkhani.notes.dto.ShareNoteRequestDTO;
@@ -39,6 +42,16 @@ public class NoteController {
         return ResponseEntity.ok(notes);
     }
 
+    @GetMapping("/notes/{id}")
+    public ResponseEntity<NoteResponseDTO> getNote(Authentication authentication, @PathVariable UUID id) {
+        if (!authorizationService.isAllowedToEditNote(id)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Note note = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+        return ResponseEntity.ok(NoteResponseDTO.from(note));
+    }
+
     @PostMapping("/notes")
     public ResponseEntity<NoteResponseDTO> createNote(Authentication authentication, @RequestBody NoteRequestDTO newNote) {
         String userEmail = authentication.getName();
@@ -54,6 +67,27 @@ public class NoteController {
         }
         NoteResponseDTO savedNote = noteService.updateNote(id, updatedNote, userEmail);
         return ResponseEntity.ok(savedNote);
+    }
+
+    /**
+     * Update only the content of a note (optimized for collaboration saves)
+     * Used by Hocuspocus server for database persistence
+     */
+    @PutMapping("/notes/{id}/content")
+    public ResponseEntity<Void> updateNoteContent(
+            Authentication authentication,
+            @PathVariable UUID id,
+            @RequestBody String content) {
+        if (!authorizationService.isAllowedToEditNote(id)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Note note = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+        note.setContent(content);
+        noteRepository.save(note);
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/notes/{id}")
@@ -89,5 +123,33 @@ public class NoteController {
         String userEmail = authentication.getName();
         NoteResponseDTO note = noteService.removeCollaborator(id, email, userEmail);
         return ResponseEntity.ok(note);
+    }
+
+    /**
+     * Verify if a user is allowed to collaborate on a note
+     * Used by Hocuspocus server for WebSocket authentication
+     */
+    @PostMapping("/notes/collaboration/verify")
+    public ResponseEntity<CollaborationVerifyResponseDTO> verifyCollaborationAccess(
+            Authentication authentication,
+            @RequestBody CollaborationVerifyRequestDTO request) {
+
+        String userEmail = authentication.getName();
+        UUID noteId = request.noteId();
+
+        // Check if user is allowed to edit the note
+        boolean isAllowed = authorizationService.isAllowedToEditNote(noteId);
+
+        // Get user information
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        CollaborationVerifyResponseDTO response = new CollaborationVerifyResponseDTO(
+                isAllowed,
+                user.getEmail(),
+                user.getUsername()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

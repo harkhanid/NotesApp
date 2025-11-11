@@ -105,4 +105,22 @@ public class AuthController {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok(Map.of("status", "success"));
         }
+
+        /**
+         * Get JWT token for WebSocket authentication
+         * Since the main token is httpOnly, we need a way for JavaScript to access it
+         * This endpoint returns the token so it can be sent with WebSocket connections
+         */
+        @GetMapping("/websocket-token")
+        public ResponseEntity<?> getWebSocketToken(Authentication authentication) {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+            }
+
+            // Get the user and generate a fresh token
+            User user = userRepo.findByEmail(authentication.getName()).orElseThrow();
+            String token = jwtUtil.generateToken(user.getUsername(), user.getRoles(), "LOCAL");
+
+            return ResponseEntity.ok(Map.of("token", token));
+        }
 }

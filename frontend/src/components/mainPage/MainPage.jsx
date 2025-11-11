@@ -26,6 +26,7 @@ const MainPage = () => {
   const currentTag = useSelector((state)=> state.ui.selectedTag);
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const currentNote =  useSelector((state)=> currentNoteId == null ? null: state.notes.byId[currentNoteId]);
+  const currentUser = useSelector((state) => state.auth.user);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   let title = "";
   const timeoutNoteUpdateRef = useRef(null);
@@ -219,7 +220,7 @@ const MainPage = () => {
                   </div>
                 </div>
                 <hr />
-                <Editor initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId}/>
+                <Editor key={currentNoteId} initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId} currentUser={currentUser} />
             </>
             }
           </div>

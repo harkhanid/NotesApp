@@ -43,11 +43,34 @@ const checkAuthStatus = () => {
   });
 };
 
+/**
+ * Get JWT token for WebSocket authentication
+ * Since the main token is httpOnly, we fetch it from the backend
+ */
+const getWebSocketToken = async () => {
+  try {
+    const response = await fetch(API_URL + "/websocket-token", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch WebSocket token");
+    }
+
+    const data = await response.json();
+    return data.token;
+  } catch (error) {
+    console.error("Error fetching WebSocket token:", error);
+    return null;
+  }
+};
+
 const authService = {
   register,
   login,
   logout,
   checkAuthStatus,
+  getWebSocketToken,
 };
 
 export default authService;

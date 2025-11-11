@@ -1,0 +1,57 @@
+/* Collaboration Cursor Styles for TipTap */
+
+/* Base cursor caret (vertical line) */
+.collaboration-cursor__caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 3px solid;
+  border-right: 3px solid;
+  word-break: normal;
+  pointer-events: none;
+  z-index: 10;
+  display: inline;
+}
+
+/* Cursor label container (shows username) */
+.collaboration-cursor__label {
+  position: absolute;
+  top: -2em;
+  left: -1px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.3;
+  user-select: none;
+  color: white !important;
+  padding: 3px 7px;
+  border-radius: 4px 4px 4px 0;
+  white-space: nowrap;
+  z-index: 11;
+  pointer-events: none;
+  display: inline-block;
+}
+
+/* Selection highlight styles */
+.collaboration-cursor__selection {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+/* Make sure cursors are visible in the editor */
+.ProseMirror {
+  position: relative;
+}
+
+/* Debug styles to visualize cursor elements */
+.collaboration-cursor__caret[data-debug="true"] {
+  border-left: 3px solid red !important;
+  border-right: 3px solid red !important;
+}
+
+.collaboration-cursor__label[data-debug="true"] {
+  background: red !important;
+  color: white !important;
+}
