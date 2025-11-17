@@ -34,6 +34,11 @@ The application uses environment-based configuration to seamlessly switch betwee
 - Maven 3.6+
 - MySQL 8.0+
 
+**Note**: The application requires 3 servers running concurrently:
+1. Frontend (Vite dev server)
+2. Backend (Spring Boot)
+3. Collaboration Server (Hocuspocus WebSocket server)
+
 ### 1. Frontend Development Setup
 
 ```bash
@@ -42,6 +47,7 @@ cd frontend
 # Create .env.development (or copy from .env.example)
 cat > .env.development << EOF
 VITE_API_URL=http://localhost:8080
+VITE_WEBSOCKET_URL=ws://localhost:1234
 EOF
 
 # Install dependencies
@@ -79,6 +85,32 @@ The backend will run on `http://localhost:8080`
 - Cookie Security: `secure=false`, `sameSite=Lax` (suitable for HTTP)
 - JPA: `ddl-auto=update`, `show-sql=true`
 
+### 3. Collaboration Server Development Setup
+
+```bash
+cd hocuspocus-server
+
+# Create .env file (optional - defaults work for development)
+cat > .env << EOF
+PORT=1234
+BACKEND_URL=http://localhost:8080
+EOF
+
+# Install dependencies
+npm install
+
+# Start collaboration server with auto-reload
+npm run dev
+```
+
+The WebSocket server will run on `ws://localhost:1234`
+
+**How It Works**:
+- Provides real-time collaboration via WebSocket connections
+- Authenticates users by validating JWT tokens against the Spring Boot backend
+- Uses Yjs CRDT for conflict-free concurrent editing
+- Stateless - all persistence handled by frontend autosave to backend
+
 ---
 
 ## Production Deployment
@@ -88,9 +120,10 @@ The backend will run on `http://localhost:8080`
 ```bash
 cd frontend
 
-# Create .env.production with your production API URL
+# Create .env.production with your production API and WebSocket URLs
 cat > .env.production << EOF
 VITE_API_URL=https://api.yourdomain.com
+VITE_WEBSOCKET_URL=wss://ws.yourdomain.com
 EOF
 
 # Build for production
@@ -109,7 +142,9 @@ netlify deploy --prod --dir=dist
 vercel --prod
 ```
 
-Make sure to set the environment variable `VITE_API_URL` in your hosting platform's dashboard.
+Make sure to set environment variables in your hosting platform's dashboard:
+- `VITE_API_URL`: Your backend API URL (e.g., `https://api.yourdomain.com`)
+- `VITE_WEBSOCKET_URL`: Your WebSocket server URL (e.g., `wss://ws.yourdomain.com`)
 
 ### 2. Backend Production Deployment
 
@@ -138,6 +173,94 @@ java -jar target/notes-*.jar
 - CORS: Allows origin from `FRONTEND_URL` environment variable
 - Cookie Security: `secure=true`, `sameSite=None` (required for HTTPS)
 - JPA: `ddl-auto=validate`, `show-sql=false`
+
+### 3. Collaboration Server Production Deployment
+
+```bash
+cd hocuspocus-server
+
+# Set production environment variables
+export PORT=1234
+export BACKEND_URL=https://api.yourdomain.com
+
+# Install dependencies (production only)
+npm install --production
+
+# Start the server
+npm start
+```
+
+**Production Configuration**:
+- `PORT`: WebSocket server port (default: 1234)
+- `BACKEND_URL`: Your production backend URL for authentication
+
+**Important Notes**:
+- Use `wss://` (WebSocket Secure) in production, not `ws://`
+- Ensure your reverse proxy/load balancer supports WebSocket connections
+- The server must be able to reach your backend API for authentication
+- Consider using a process manager like PM2 or systemd for auto-restart
+
+**Example with PM2**:
+```bash
+# Install PM2 globally
+npm install -g pm2
+
+# Start with PM2
+cd hocuspocus-server
+pm2 start npm --name "hocuspocus" -- start
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 to start on system boot
+pm2 startup
+```
+
+**Example systemd service** (`/etc/systemd/system/hocuspocus.service`):
+```ini
+[Unit]
+Description=Hocuspocus Collaboration Server
+After=network.target
+
+[Service]
+Type=simple
+User=notesapp
+WorkingDirectory=/opt/notesapp/hocuspocus-server
+ExecStart=/usr/bin/node server.js
+Environment="PORT=1234"
+Environment="BACKEND_URL=https://api.yourdomain.com"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Reverse Proxy Configuration (Nginx)**:
+```nginx
+# WebSocket server proxy
+server {
+    listen 443 ssl;
+    server_name ws.yourdomain.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://localhost:1234;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeout settings
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+}
+```
 
 ### Production Deployment Options
 
@@ -219,6 +342,7 @@ sudo systemctl start notesapp
 | Variable | Description | Development | Production |
 |----------|-------------|-------------|------------|
 | `VITE_API_URL` | Backend API URL | `http://localhost:8080` | `https://api.yourdomain.com` |
+| `VITE_WEBSOCKET_URL` | WebSocket server URL for collaboration | `ws://localhost:1234` | `wss://ws.yourdomain.com` |
 
 ### Backend Environment Variables
 
@@ -232,6 +356,13 @@ sudo systemctl start notesapp
 | `GOOGLE_CLIENT_ID` | Google OAuth2 client ID | Yes (for OAuth) | `123456.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret | Yes (for OAuth) | `GOCSPX-abc123` |
 | `FRONTEND_URL` | Frontend application URL (for CORS & OAuth redirect) | No (has defaults) | `https://yourdomain.com` |
+
+### Collaboration Server Environment Variables
+
+| Variable | Description | Required | Default | Example |
+|----------|-------------|----------|---------|---------|
+| `PORT` | WebSocket server port | No | `1234` | `1234` |
+| `BACKEND_URL` | Spring Boot backend URL for authentication | No | `http://localhost:8080` | `https://api.yourdomain.com` |
 
 ### Profile-Specific Properties
 
@@ -260,11 +391,16 @@ Properties set automatically based on active profile:
 - [ ] Use secure database credentials
 - [ ] Set `FRONTEND_URL` to your actual frontend domain
 - [ ] Enable HTTPS on both frontend and backend
+- [ ] Configure WebSocket server with WSS (secure WebSocket)
+- [ ] Set up reverse proxy with WebSocket support (Nginx/Apache)
+- [ ] Ensure collaboration server can reach backend for authentication
 - [ ] Configure Google OAuth2 authorized redirect URIs in Google Console
 - [ ] Review and update CORS origins in production
 - [ ] Set up database backups
 - [ ] Configure proper logging and monitoring
 - [ ] Use environment variables (never commit secrets to git)
+- [ ] Set up process manager (PM2/systemd) for collaboration server
+- [ ] Configure WebSocket connection timeout settings
 
 ---
 
@@ -292,21 +428,68 @@ Properties set automatically based on active profile:
   - Prod: `https://api.yourdomain.com/login/oauth2/code/google`
 - Check `FRONTEND_URL` is set correctly for post-auth redirect
 
+### WebSocket/Collaboration Issues
+
+**Connection Failed**:
+- Verify collaboration server is running (`ws://localhost:1234` or `wss://ws.yourdomain.com`)
+- Check `VITE_WEBSOCKET_URL` in frontend environment variables matches server URL
+- In production, ensure reverse proxy supports WebSocket upgrade headers
+- Check browser console for WebSocket errors
+- Verify firewall allows WebSocket connections on the configured port
+
+**Authentication Failed**:
+- Verify `BACKEND_URL` in collaboration server points to correct backend
+- Check collaboration server can reach the backend (network connectivity)
+- Ensure JWT token is valid and not expired
+- Check backend logs for authentication errors at `/api/notes/collaboration/verify`
+
+**Collaboration Not Syncing**:
+- Multiple users must be connected to the same note ID
+- Check that users have proper authorization to access the note
+- Verify all clients are using the same WebSocket server
+- Check for network issues or connection drops
+- Look for errors in collaboration server logs
+
+**Production WebSocket Issues**:
+- Ensure using `wss://` (secure) not `ws://` in production
+- Verify SSL/TLS certificates are valid
+- Check reverse proxy configuration for WebSocket support:
+  - Nginx: `proxy_set_header Upgrade $http_upgrade` and `Connection "upgrade"`
+  - Apache: `RewriteEngine on` and `RewriteCond %{HTTP:Upgrade} websocket`
+- Increase WebSocket timeout settings if connections drop frequently
+- Check load balancer supports sticky sessions if using multiple servers
+
+**Server Not Starting**:
+- Verify Node.js version is 18+
+- Check port 1234 is not already in use: `lsof -i :1234` (Unix) or `netstat -ano | findstr :1234` (Windows)
+- Review collaboration server logs for errors
+- Ensure all dependencies are installed: `npm install`
+
 ---
 
 ## Quick Start Commands
 
 ### Development
 ```bash
-# Frontend
+# Terminal 1: Frontend
 cd frontend && npm install && npm run dev
 
-# Backend (in another terminal)
+# Terminal 2: Backend
 cd notes
 export DATABASE_PASSWORD=yourpass
 export JWT_SECRET=yoursecret
+export GOOGLE_CLIENT_ID=your_google_client_id
+export GOOGLE_CLIENT_SECRET=your_google_client_secret
 ./mvnw spring-boot:run
+
+# Terminal 3: Collaboration Server
+cd hocuspocus-server && npm install && npm run dev
 ```
+
+**Servers will run on:**
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8080
+- WebSocket: ws://localhost:1234
 
 ### Production Build
 ```bash

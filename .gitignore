@@ -20,6 +20,7 @@ dist-ssr
 
 # Backend environment files
 notes/.env
+hocuspocus-server/.env
 
 # Editor directories and files
 .vscode/*

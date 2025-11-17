@@ -42,7 +42,6 @@ const server = Server.configure({
     }
 
     try {
-      // Verify token and authorization with Spring Boot backend
       const response = await axios.post(
         `${BACKEND_URL}/api/notes/collaboration/verify`,
         { noteId },
@@ -71,11 +70,6 @@ const server = Server.configure({
         }
       };
     } catch (error) {
-      if (error.response) {
-        console.error(`Authentication failed: ${error.response.status} ${error.response.statusText}`);
-      } else {
-        console.error(`Authentication error: ${error.message}`);
-      }
       throw new Error('Authentication failed');
     }
   },

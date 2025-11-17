@@ -38,16 +38,18 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
         const token = await authService.getWebSocketToken();
 
         if (!token) {
-          console.error('Failed to get WebSocket token - collaboration disabled');
+          console.error('[Editor] Failed to get WebSocket token - collaboration disabled');
           return;
         }
 
         const doc = getOrCreateDocument(noteId);
-        const prov = getOrCreateProvider(noteId, doc, {
+        const userInfo = {
           username: currentUser?.username || currentUser?.email || 'Anonymous',
           email: currentUser?.email || '',
           color: currentUser?.color || generateUserColor(currentUser?.email),
-        }, token);
+        };
+
+        const prov = getOrCreateProvider(noteId, doc, userInfo, token);
 
         ydocRef.current = doc;
         providerRef.current = prov;
@@ -56,8 +58,12 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
         prov.on('synced', () => {
           setIsCollaborationReady(true);
         });
+
+        prov.on('connection-error', (event) => {
+          console.error('[Editor] Connection error:', event);
+        });
       } catch (error) {
-        console.error('Failed to initialize collaboration:', error);
+        console.error('[Editor] Failed to initialize collaboration:', error);
       }
     };
 

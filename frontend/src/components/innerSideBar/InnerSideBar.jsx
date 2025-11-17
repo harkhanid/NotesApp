@@ -54,8 +54,6 @@ const InnerSideBar = () => {
       emptyMessage="";
   }
 
-  console.log(notesList);
-
   // Auto-select first note on desktop when filter changes
   useEffect(() => {
     // Skip auto-selection for SETTINGS view

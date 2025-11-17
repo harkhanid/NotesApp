@@ -31,6 +31,8 @@ public class Note {
         private UUID id;
 
 	    private String title;
+
+	    @Column(columnDefinition = "TEXT")
 	    private String content;
 
 	    @ManyToOne

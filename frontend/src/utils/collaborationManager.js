@@ -133,6 +133,15 @@ const generateUserColor = (email) => {
 };
 
 /**
+ * Get the provider for a specific note
+ * @param {string} noteId - The UUID of the note
+ * @returns {HocuspocusProvider|null} The provider instance or null
+ */
+export const getProvider = (noteId) => {
+  return activeProviders.get(noteId) || null;
+};
+
+/**
  * Get active user count for a note
  * @param {string} noteId - The UUID of the note
  * @returns {number} Number of active users

@@ -61,7 +61,6 @@ const MainPage = () => {
     default:
       title="";
   }
-  console.log("Current Note:", currentFilter);
   /* Debounce Destroyer on unmounting */
   useEffect(()=>{
     return ()=>{
