@@ -2,22 +2,24 @@
 
 This guide covers deploying the NotesApp to production using:
 
-- **Frontend**: Vercel
-- **Backend (Spring Boot)**: Render
-- **Database**: PostgreSQL on
-  Render
-- **Collaboration Server**: Render
+- **Frontend**: Vercel (Free forever)
+- **Backend (Spring Boot)**: Render (Free with sleep)
+- **Database**: Neon PostgreSQL (Free forever, 0.5GB)
+- **Collaboration Server**: Render (Free with sleep)
+
+**Total Cost: $0/month** 🎉
 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Database Setup (PostgreSQL on Render)](#database-setup-postgresql-on-render)
-3. [Backend Deployment (Spring Boot on Render)](#backend-deployment-spring-boot-on-render)
-4. [Collaboration Server Deployment (Hocuspocus on Render)](#collaboration-server-deployment-hocuspocus-on-render)
-5. [Frontend Deployment (React on Vercel)](#frontend-deployment-react-on-vercel)
-6. [Post-Deployment Configuration](#post-deployment-configuration)
-7. [Environment Variables Reference](#environment-variables-reference)
-8. [Troubleshooting](#troubleshooting)
+2. [Database Setup (Neon PostgreSQL - Free Forever)](#database-setup-neon-postgresql---free-forever)
+3. [Database Alternatives](#database-alternatives)
+4. [Backend Deployment (Spring Boot on Render)](#backend-deployment-spring-boot-on-render)
+5. [Collaboration Server Deployment (Hocuspocus on Render)](#collaboration-server-deployment-hocuspocus-on-render)
+6. [Frontend Deployment (React on Vercel)](#frontend-deployment-react-on-vercel)
+7. [Post-Deployment Configuration](#post-deployment-configuration)
+8. [Environment Variables Reference](#environment-variables-reference)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -28,42 +30,117 @@ Before deploying, ensure you have:
 - [ ] GitHub repository with your code
 - [ ] Vercel account (https://vercel.com)
 - [ ] Render account (https://render.com)
+- [ ] Neon account (https://neon.tech)
 - [ ] Google OAuth2 credentials (for OAuth login)
 - [ ] Domain name (optional, for custom domains)
 
 ---
 
-## Database Setup (PostgreSQL on Render)
+## Database Setup (Neon PostgreSQL - Free Forever)
 
-### Step 1: Create PostgreSQL Database
+Neon provides **free forever** serverless PostgreSQL with 0.5GB storage - perfect for small to medium apps!
 
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click **New** → **PostgreSQL**
-3. Configure the database:
+### Step 1: Create Neon Account
 
-   - **Name**: `notesapp-db`
-   - **Database**: `notesapp`
-   - **User**: (auto-generated)
-   - **Region**: Choose closest to your users
-   - **PostgreSQL Version**: 15 or latest
-   - **Plan**: Free tier or paid plan
+1. Go to [Neon.tech](https://neon.tech)
+2. Click **Sign Up** or **Get Started**
+3. Sign up with GitHub, Google, or email
+4. Verify your email if required
 
-4. Click **Create Database**
+### Step 2: Create Database Project
 
-### Step 2: Note Database Credentials
+1. After login, click **Create a project** or **New Project**
+2. Configure the project:
+   - **Project name**: `NotesApp` or `notesapp-production`
+   - **Region**: Choose closest to your Render backend region (e.g., US East for `us-east-1`)
+   - **PostgreSQL version**: 16 (latest stable)
+   - **Compute size**: Keep default (free tier)
 
-After creation, you'll see:
+3. Click **Create Project**
 
-- **Internal Database URL**: Use this for backend (same network, faster)
-- **External Database URL**: Format: `postgres://user:password@host:port/database`
+### Step 3: Get Database Connection String
 
-Copy the **Internal Database URL** - you'll need it for the backend configuration.
+After creation, you'll see a connection details screen:
 
-**Example**:
+1. **Connection string format**: Select **JDBC** from the dropdown
+2. Copy the connection string - it will look like:
 
 ```
-postgres://notesapp_user:xxxxxxxxxxxxx@dpg-xxxxx-a/notesapp_db
+jdbc:postgresql://ep-xxxxxxxx.us-east-2.aws.neon.tech/neondb?user=youruser&password=yourpassword&sslmode=require
 ```
+
+**Important Notes**:
+- ✅ This connection string is **external** (works from anywhere)
+- ✅ Neon automatically includes SSL (`sslmode=require`)
+- ✅ Free tier: **0.5GB storage**, 1 compute unit, autoscaling
+- ✅ Database scales to zero when inactive (saves resources)
+- 🔒 **Save this connection string securely** - you'll need it for Render
+
+### Step 4: Create Database Tables (Optional)
+
+Neon creates a default database called `neondb`. You have two options:
+
+**Option A: Use default database** (Recommended)
+- Keep the connection string as-is
+- Spring Boot will auto-create tables via Hibernate
+
+**Option B: Create custom database**
+1. Go to **SQL Editor** in Neon dashboard
+2. Run:
+   ```sql
+   CREATE DATABASE notesapp;
+   ```
+3. Update connection string to use `notesapp` instead of `neondb`
+
+### Step 5: Test Connection (Optional)
+
+You can test the connection in Neon's SQL Editor:
+
+```sql
+SELECT version();
+```
+
+Should show PostgreSQL version.
+
+---
+
+## Database Alternatives
+
+If you prefer other options:
+
+### Option 1: Render PostgreSQL
+**Cost**: Free for 90 days, then $7/month
+- More integrated with Render backend
+- Internal networking (faster)
+- ⚠️ **Not free forever**
+
+**Setup**: [Render PostgreSQL Docs](https://render.com/docs/databases)
+
+### Option 2: Supabase
+**Cost**: Free forever (500MB)
+- Includes auth, storage, realtime
+- Smaller storage than Neon
+- Great if you want extra features
+
+**Setup**: [Supabase Docs](https://supabase.com/docs)
+
+### Option 3: Vercel Postgres
+**Cost**: Free hobby tier (256MB)
+- Integrates with Vercel
+- Very limited storage
+- Good for small apps
+
+**Setup**: [Vercel Postgres Docs](https://vercel.com/docs/storage/vercel-postgres)
+
+### Option 4: Railway
+**Cost**: $5/month credit (renews monthly)
+- Can run MySQL or PostgreSQL
+- No sleep on free tier
+- Credit can run out with heavy usage
+
+**Setup**: [Railway Docs](https://docs.railway.app/databases/postgresql)
+
+**Recommended**: Stick with **Neon** for best free tier.
 
 ---
 
@@ -74,48 +151,38 @@ postgres://notesapp_user:xxxxxxxxxxxxx@dpg-xxxxx-a/notesapp_db
 1. Update `application.properties` to use environment variables:
 
 ```properties
-# Database Configuration
+# Database Configuration (Neon)
+# The DATABASE_URL from Neon already includes username, password, and SSL settings
 spring.datasource.url=${DATABASE_URL}
 spring.datasource.username=${DATABASE_USERNAME:}
 spring.datasource.password=${DATABASE_PASSWORD:}
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
-# JWT Configuration
-jwt.secret=${JWT_SECRET}
-jwt.expiration=86400000
+# JWT Configuration (matches JwtUtil.java)
+security.jwt.secret=${JWT_SECRET}
+security.jwt.expiration-ms=3600000
 
 # OAuth2 Configuration
 spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID}
 spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET}
-spring.security.oauth2.client.registration.google.redirect-uri=${OAUTH2_REDIRECT_URI:https://your-backend-url.onrender.com/login/oauth2/code/google}
+spring.security.oauth2.client.registration.google.redirect-uri=${OAUTH2_REDIRECT_URI:}
+spring.security.oauth2.client.registration.google.scope=openid,email,profile
 
-# CORS Configuration
-cors.allowed.origins=${CORS_ALLOWED_ORIGINS:https://your-frontend.vercel.app}
+# Frontend URL (for CORS - matches CorsConfig.java)
+app.frontend.url=${FRONTEND_URL:https://your-frontend.vercel.app}
 
 # Server Configuration
 server.port=${PORT:8080}
 ```
 
-2. Create `render.yaml` in the project root (optional, for infrastructure as code):
+**Important Notes**:
+- ✅ **No separate username/password needed** - Neon's JDBC URL includes them
+- ✅ Your Neon URL format: `jdbc:postgresql://host/db?user=X&password=Y&sslmode=require`
+- ❌ **Do NOT add** `spring.datasource.username` or `spring.datasource.password`
+- 🔒 SSL is enforced via `sslmode=require` in the URL
 
-```yaml
-services:
-  - type: web
-    name: notesapp-backend
-    env: java
-    buildCommand: cd notes && ./mvnw clean install -DskipTests
-    startCommand: cd notes && java -jar target/notes-*.jar
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: notesapp-db
-          property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JAVA_OPTS
-        value: "-Xmx512m"
-```
+2. **Important**: Since you're using **Neon** (external database), you won't use Render's database features. You'll paste the Neon connection string directly as an environment variable.
 
 ### Step 2: Deploy to Render
 
@@ -126,25 +193,32 @@ services:
 
    - **Name**: `notesapp-backend`
    - **Environment**: `Java`
-   - **Region**: Same as database
+   - **Region**: Choose closest to your Neon database region (e.g., US East)
    - **Branch**: `main` or your production branch
    - **Root Directory**: `notes`
    - **Build Command**: `./mvnw clean install -DskipTests`
    - **Start Command**: `java -jar target/notes-*.jar`
-   - **Plan**: Free tier or paid plan
+   - **Plan**: Free tier (with sleep) or paid plan
 
 5. Add environment variables (click **Environment**):
 
 ```
-DATABASE_URL=<paste Internal Database URL from Step 1>
-JWT_SECRET=<generate a secure 256-bit secret, e.g., use: openssl rand -base64 64>
+SPRING_PROFILES_ACTIVE=prod
+DATABASE_URL=jdbc:postgresql://ep-xxxxxxxx.us-east-2.aws.neon.tech/neondb?user=youruser&password=yourpassword&sslmode=require
+JWT_SECRET=<generate a secure 256-bit secret>
 GOOGLE_CLIENT_ID=<your Google OAuth client ID>
 GOOGLE_CLIENT_SECRET=<your Google OAuth client secret>
-CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app
+FRONTEND_URL=https://your-frontend.vercel.app
 OAUTH2_REDIRECT_URI=https://your-backend.onrender.com/login/oauth2/code/google
 ```
 
-**Important**: After first deployment, update `CORS_ALLOWED_ORIGINS` with your actual Vercel frontend URL.
+**Important Notes**:
+- `SPRING_PROFILES_ACTIVE=prod` - Activates production profile (uses application-prod.properties)
+- Replace `DATABASE_URL` with your **actual Neon JDBC connection string** from earlier step
+- Generate `JWT_SECRET`: `openssl rand -base64 64` (must be at least 32 characters)
+- `FRONTEND_URL` - Your Vercel app URL (for CORS)
+- `OAUTH2_REDIRECT_URI` - Must match your backend URL
+- ⚠️ **Do NOT** add `DATABASE_USERNAME` or `DATABASE_PASSWORD` - they're already in the Neon JDBC URL
 
 6. Click **Create Web Service**
 
@@ -296,10 +370,10 @@ Or use a custom domain (see Vercel settings).
 ### Step 1: Update CORS on Backend
 
 1. Go to Render Dashboard → **notesapp-backend** → **Environment**
-2. Update `CORS_ALLOWED_ORIGINS` with your Vercel URL:
+2. Update `FRONTEND_URL` with your actual Vercel URL:
 
 ```
-CORS_ALLOWED_ORIGINS=https://notesapp-<your-id>.vercel.app
+FRONTEND_URL=https://notesapp-<your-id>.vercel.app
 ```
 
 3. Click **Save Changes** - This will trigger a redeploy
@@ -350,14 +424,20 @@ Test the following:
 
 ### Backend (Render)
 
-| Variable               | Description                            | Example                                                 |
-| ---------------------- | -------------------------------------- | ------------------------------------------------------- |
-| `DATABASE_URL`         | PostgreSQL connection string           | `postgres://user:pass@host/db`                          |
-| `JWT_SECRET`           | Secret for JWT token signing (256-bit) | `openssl rand -base64 64`                               |
-| `GOOGLE_CLIENT_ID`     | Google OAuth client ID                 | `xxxxx.apps.googleusercontent.com`                      |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret             | `GOCSPX-xxxxx`                                          |
-| `CORS_ALLOWED_ORIGINS` | Frontend URL for CORS                  | `https://app.vercel.app`                                |
-| `OAUTH2_REDIRECT_URI`  | OAuth redirect URI                     | `https://backend.onrender.com/login/oauth2/code/google` |
+| Variable                  | Description                                        | Example                                                                      |
+| ------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `SPRING_PROFILES_ACTIVE`  | Spring Boot profile (use "prod" for production)    | `prod`                                                                       |
+| `DATABASE_URL`            | Neon PostgreSQL JDBC connection string (with SSL) | `jdbc:postgresql://ep-xxx.aws.neon.tech/neondb?user=X&password=Y&sslmode=require` |
+| `JWT_SECRET`              | Secret for JWT token signing (256-bit)             | `openssl rand -base64 64`                                                    |
+| `GOOGLE_CLIENT_ID`        | Google OAuth client ID                             | `123456789-abcdefg.apps.googleusercontent.com`                               |
+| `GOOGLE_CLIENT_SECRET`    | Google OAuth client secret                         | `GOCSPX-xxxxxxxxxxxxx`                                                       |
+| `FRONTEND_URL`            | Frontend URL for CORS                              | `https://notesapp-xyz.vercel.app`                                            |
+| `OAUTH2_REDIRECT_URI`     | OAuth redirect URI                                 | `https://notesapp-backend.onrender.com/login/oauth2/code/google`             |
+
+**Important**:
+- ⚠️ Do NOT add `DATABASE_USERNAME` or `DATABASE_PASSWORD` - they are already included in Neon's JDBC URL
+- ✅ The `DATABASE_URL` must include `sslmode=require` for Neon connections
+- 🔒 All values contain sensitive data - never commit to Git
 
 ### Collaboration Server (Render)
 
@@ -403,10 +483,11 @@ JAVA_VERSION=17
 **Solutions**:
 
 1. Verify `VITE_API_URL` in Vercel environment variables
-2. Check `CORS_ALLOWED_ORIGINS` on backend includes frontend URL
+2. Check `FRONTEND_URL` environment variable on Render backend matches your Vercel URL
 3. Ensure backend is running (visit backend URL in browser)
 4. Check browser console for exact error
 5. Verify HTTPS is used (not HTTP)
+6. Check `CorsConfig.java` is using `app.frontend.url` property
 
 ### WebSocket Connection Fails
 
@@ -426,11 +507,13 @@ JAVA_VERSION=17
 
 **Solutions**:
 
-1. Use **Internal Database URL** (faster, more reliable)
-2. Verify database is in same region as backend
-3. Check database is active on Render
-4. Ensure connection string format is correct
-5. Check Render database logs
+1. Verify **Neon JDBC connection string** is correct
+2. Ensure `sslmode=require` is in the connection string
+3. Check Neon database is active (go to Neon dashboard)
+4. Verify username and password in connection string are correct
+5. Test connection from Neon SQL Editor first
+6. Check Render backend logs for specific error messages
+7. Ensure DATABASE_URL environment variable is set correctly on Render
 
 ### OAuth Login Not Working
 
@@ -491,25 +574,72 @@ As your app grows:
 
 ## Cost Estimation (Monthly)
 
-**Free Tier** (Development/Testing):
+### Option 1: Fully Free Forever ⭐ (Recommended)
 
-- Render PostgreSQL Free: $0
-- Render Web Services (2): $0 (with sleep)
-- Vercel Hobby: $0
-- **Total**: $0/month
+Using Neon + Render Free Tier + Vercel:
 
-**Recommended Production** (Small Scale):
+- **Neon PostgreSQL**: $0 (Free forever, 0.5GB)
+- **Render Backend**: $0 (Free with 15-min sleep)
+- **Render Collaboration Server**: $0 (Free with 15-min sleep)
+- **Vercel Frontend**: $0 (Free forever)
+- **Total**: **$0/month** 🎉
 
-- Render PostgreSQL Starter: $7/month
-- Render Backend (Starter): $7/month
-- Render Collaboration (Starter): $7/month
-- Vercel Pro: $20/month (optional)
-- **Total**: ~$21-41/month
+**Limitations**:
+- ⏱️ Backend services sleep after 15 minutes of inactivity (30-60s wake time)
+- 💾 **0.5GB database storage** (sufficient for ~5,000-10,000 notes)
+- 📊 Suitable for personal projects, demos, small apps
+
+**Tip**: Use [UptimeRobot](https://uptimerobot.com/) (free) to ping services every 5 minutes to keep them awake!
+
+---
+
+### Option 2: Production Ready (No Sleep)
+
+For apps with regular traffic:
+
+- **Neon PostgreSQL**: $0 (Free forever, 0.5GB)
+- **Render Backend (Starter)**: $7/month (24/7 uptime)
+- **Render Collaboration (Starter)**: $7/month (24/7 uptime)
+- **Vercel Hobby**: $0 (Free forever)
+- **Total**: **$14/month**
+
+**Benefits**:
+- ✅ No sleep on backend services
+- ✅ Faster response times
+- ✅ Better user experience
+- ✅ Still free database (upgrade to paid if you need more storage)
+
+---
+
+### Option 3: Production with Paid Database
+
+For larger apps needing more storage:
+
+- **Neon Launch Plan**: $19/month (10GB storage, more compute)
+- **Render Backend (Starter)**: $7/month
+- **Render Collaboration (Starter)**: $7/month
+- **Vercel Pro**: $20/month (optional - better analytics)
+- **Total**: **$33-53/month**
+
+**Note**: For 100GB+ storage needs, consider Neon's Scale plan ($69/month) or other database providers.
+
+---
+
+### Comparison Table
+
+| Service | Free Forever | Production (No Sleep) | Production (Large) |
+|---------|--------------|----------------------|--------------------|
+| Database | Neon (0.5GB) - $0 | Neon (0.5GB) - $0 | Neon Scale (10GB) - $19 |
+| Backend | Render (sleep) - $0 | Render Starter - $7 | Render Starter - $7 |
+| Collaboration | Render (sleep) - $0 | Render Starter - $7 | Render Starter - $7 |
+| Frontend | Vercel - $0 | Vercel - $0 | Vercel Pro - $20 |
+| **Monthly Total** | **$0** | **$14** | **$33-53** |
 
 ---
 
 ## Support and Resources
 
+- **Neon Docs**: https://neon.tech/docs
 - **Render Docs**: https://render.com/docs
 - **Vercel Docs**: https://vercel.com/docs
 - **Hocuspocus Docs**: https://tiptap.dev/hocuspocus
