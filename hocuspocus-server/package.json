@@ -1,0 +1,19 @@
+{
+  "name": "notesapp-hocuspocus-server",
+  "version": "1.0.0",
+  "description": "Hocuspocus collaboration server for NotesApp",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["yjs", "collaboration", "hocuspocus", "websocket"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hocuspocus/server": "^2.13.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.4.0"
+  }
+}

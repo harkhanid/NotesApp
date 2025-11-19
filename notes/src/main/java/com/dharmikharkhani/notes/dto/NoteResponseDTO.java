@@ -1,4 +1,5 @@
 package com.dharmikharkhani.notes.dto;
+import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.entity.Note;
 import com.dharmikharkhani.notes.entity.Tag;
 
@@ -10,13 +11,28 @@ public record NoteResponseDTO(
         UUID id,
         String title,
         String content,
-        Set<String> tags
+        Set<String> tags,
+        boolean isShared,
+        Set<CollaboratorDTO> sharedWith
 ){
     public static NoteResponseDTO from(Note note){
-        Set<String> tagNames = note.getTags().stream()
+        Set<String> tags = note.getTags().stream()
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
-        Set<String> tags = note.getTags().stream().map(tag -> tag.getName()).collect(Collectors.toSet());
-        return new NoteResponseDTO(note.getId(), note.getTitle(), note.getContent(), tags);
+
+        Set<CollaboratorDTO> collaborators = note.getSharedWith().stream()
+                .map(CollaboratorDTO::from)
+                .collect(Collectors.toSet());
+
+        boolean isShared = !note.getSharedWith().isEmpty();
+
+        return new NoteResponseDTO(
+                note.getId(),
+                note.getTitle(),
+                note.getContent(),
+                tags,
+                isShared,
+                collaborators
+        );
     }
 }

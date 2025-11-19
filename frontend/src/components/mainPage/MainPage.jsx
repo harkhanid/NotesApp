@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync } from "../../store/notesSlice.js";
+import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync, fetchAllNotesAsync } from "../../store/notesSlice.js";
 import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -8,12 +8,15 @@ import HeadingEditor from "../editor/HeadingEditor.jsx";
 import Editor from "../editor/Editor.jsx";
 import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
+import ShareModal from "../shareModal/ShareModal.jsx";
+import notesService from "../../Service/notesService.js";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
 import DeleteIcon from "../../assets/images/icon-delete.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 import ClockIcon from "../../assets/images/icon-clock.svg?react";
 import LeftArrowIcon from "../../assets/images/icon-arrow-left.svg?react";
+import ShareIcon from "../../assets/images/icon-share.svg?react";
 
 import "./MainPage.css";
 
@@ -23,6 +26,8 @@ const MainPage = () => {
   const currentTag = useSelector((state)=> state.ui.selectedTag);
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const currentNote =  useSelector((state)=> currentNoteId == null ? null: state.notes.byId[currentNoteId]);
+  const currentUser = useSelector((state) => state.auth.user);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   let title = "";
   const timeoutNoteUpdateRef = useRef(null);
   const timeoutSearchUpdateRef = useRef(null);
@@ -56,7 +61,6 @@ const MainPage = () => {
     default:
       title="";
   }
-  console.log("Current Note:", currentFilter);
   /* Debounce Destroyer on unmounting */
   useEffect(()=>{
     return ()=>{
@@ -137,6 +141,30 @@ const MainPage = () => {
     dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
   }
 
+  const handleShare = async (emails) => {
+    if (!currentNote) return;
+    try {
+      await notesService.shareNote(currentNoteId, emails);
+      // Refresh the notes list to get updated sharedWith data
+      dispatch(fetchAllNotesAsync());
+    } catch (error) {
+      console.error("Failed to share note:", error);
+      throw error;
+    }
+  }
+
+  const handleRemoveCollaborator = async (email) => {
+    if (!currentNote) return;
+    try {
+      await notesService.removeCollaborator(currentNoteId, email);
+      // Refresh the notes list to get updated sharedWith data
+      dispatch(fetchAllNotesAsync());
+    } catch (error) {
+      console.error("Failed to remove collaborator:", error);
+      throw error;
+    }
+  }
+
   
   
 
@@ -164,6 +192,7 @@ const MainPage = () => {
             <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               <div className="top-bar-right">
+                <button className="btn-none" onClick={() => setIsShareModalOpen(true)}><ShareIcon /></button>
                 <button className="btn-none" onClick={toggleArchive}><ArchiveIcon /></button>
                 <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
               </div>
@@ -190,7 +219,7 @@ const MainPage = () => {
                   </div>
                 </div>
                 <hr />
-                <Editor initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId}/>
+                <Editor key={currentNoteId} initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId} currentUser={currentUser} />
             </>
             }
           </div>
@@ -198,10 +227,18 @@ const MainPage = () => {
       }
       {currentNoteId !== null && currentFilter !== "SETTINGS" && (
         <div className="right-sidebar flow-content">
+          <button className="btn full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon /><p>Share Note</p></button>
           <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
           <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
         </div>
       )}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        note={currentNote}
+        onShare={handleShare}
+        onRemoveCollaborator={handleRemoveCollaborator}
+      />
     </div>
   );
 };

@@ -84,6 +84,36 @@ const searchNotes = async (keyword) => {
   return await response.json();
 };
 
+const shareNote = async (noteId, emails) => {
+  const response = await fetch(`${API_URL}/notes/${noteId}/share`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ emails }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to share note: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
+const removeCollaborator = async (noteId, email) => {
+  const response = await fetch(`${API_URL}/notes/${noteId}/collaborators/${encodeURIComponent(email)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to remove collaborator: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
 const notesService = {
     getAllNotes,
     getTags,
@@ -91,6 +121,8 @@ const notesService = {
     updateNote,
     deleteNote,
     searchNotes,
+    shareNote,
+    removeCollaborator,
 };
 
 export default notesService;

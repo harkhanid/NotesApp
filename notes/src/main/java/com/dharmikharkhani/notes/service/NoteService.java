@@ -37,7 +37,8 @@ public class NoteService {
     public List<NoteResponseDTO> getNoteList(Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow();
-        List<Note> notes = noteRepository.findByOwner(user);
+        // Get notes owned by user AND notes shared with user
+        List<Note> notes = noteRepository.findByOwnerOrSharedWith(user);
         return notes.stream().map(note -> NoteResponseDTO.from(note)).toList();
     }
 
@@ -123,6 +124,53 @@ public class NoteService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         List<Note> notes = noteRepository.searchNotesByKeyword(user, keyword);
         return notes.stream().map(NoteResponseDTO::from).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public NoteResponseDTO shareNote(UUID noteId, Set<String> emails, String ownerEmail) {
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException());
+
+        // Verify the user is the owner
+        if (!note.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("Only the note owner can share the note");
+        }
+
+        // Find all users by email and add to sharedWith
+        Set<User> usersToShare = emails.stream()
+                .map(email -> userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + email)))
+                .collect(Collectors.toSet());
+
+        note.getSharedWith().addAll(usersToShare);
+        Note savedNote = noteRepository.save(note);
+
+        return NoteResponseDTO.from(savedNote);
+    }
+
+    @Transactional
+    public NoteResponseDTO removeCollaborator(UUID noteId, String collaboratorEmail, String ownerEmail) {
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException());
+
+        // Verify the user is the owner
+        if (!note.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("Only the note owner can remove collaborators");
+        }
+
+        User collaborator = userRepository.findByEmail(collaboratorEmail)
+                .orElseThrow(() -> new RuntimeException("User not found: " + collaboratorEmail));
+
+        note.getSharedWith().remove(collaborator);
+        Note savedNote = noteRepository.save(note);
+
+        return NoteResponseDTO.from(savedNote);
     }
 }
 
