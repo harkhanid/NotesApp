@@ -71,6 +71,7 @@ Before you begin, ensure you have the following installed:
 - **Java JDK** (17 or higher)
 - **Maven** (3.8+)
 - **MySQL** (8.0+) for local development
+- **Docker** (optional, for containerized deployment)
 - **Git**
 
 ## 🚀 Getting Started
@@ -351,12 +352,19 @@ Output: `frontend/dist/`
 
 ### Backend
 
+**Option 1: Using Maven**
 ```bash
 cd notes
 ./mvnw clean package -DskipTests
 ```
-
 Output: `notes/target/notes-*.jar`
+
+**Option 2: Using Docker** (Recommended for Render deployment)
+```bash
+cd notes
+docker build -t notesapp-backend .
+```
+Output: Docker image `notesapp-backend`
 
 ### Collaboration Server
 
