@@ -32,7 +32,6 @@ const CommaSupport = Extension.create({
 
 const TagEditor = ({ initialTags, onUpdate }) => {
   // Convert tags array to CSV string for display
-  console.log("Initial Tags in TagEditor:", initialTags);
   const tagsToCSV = (tags) => {
     return Array.isArray(tags) ? tags.join(", ") : "";
   };

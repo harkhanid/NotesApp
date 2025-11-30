@@ -68,7 +68,7 @@ const SettingsBar = () => {
       break;
     case "Change Password":
       Title="Change Password";
-      description="Update your account password regularly to keep your account secure.";
+      description="This Functionality is currently unavailable. Please use forgot password on the login page to reset your password.";
       break;
     default:
   }
@@ -76,7 +76,7 @@ const SettingsBar = () => {
   return (
     <>
     <div className={`inner-sidebar ${currentSetting == null ? "" : "mobile-hide" }` } >
-        <ul className="flow-content xxs-spacer">
+        <ul className="flow-content xsm-spacer">
           {settingsContent.map((item, index) => {
             const IconComponent = item.icon;
             return (
@@ -88,7 +88,7 @@ const SettingsBar = () => {
           )}
         </ul>
     </div>
-    { <div className={`note-content settings-page flow-content xxs-spacer ${currentSetting != null ? "" :" mobile-hide" } `}>
+    { <div className={`note-content settings-page flow-content xsm-spacer ${currentSetting != null ? "" :" mobile-hide" } `}>
       <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
         <button className="btn-none goback-btn" onClick={()=>{setCurrentSetting(null)}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
       </div>

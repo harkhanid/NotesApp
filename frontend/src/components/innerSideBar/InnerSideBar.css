@@ -29,6 +29,12 @@
   cursor: pointer;
 }
 
+.note-item .preset-3{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (min-width: 75em) {
   .notes-add > button{
     position: relative;

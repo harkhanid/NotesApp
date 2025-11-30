@@ -6,7 +6,6 @@ const initialState = {
   searchQuery: "",
   selectedTag: "",
   status: "idle",
-  theme: "Light Mode",
   font: "sans-serif",
 };
 

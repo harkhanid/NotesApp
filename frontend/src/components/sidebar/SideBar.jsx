@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.svg";
 import HomeIcon from "../../assets/images/icon-home.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
+import ShareIcon from "../../assets/images/icon-share.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 import SearchIcon from "../../assets/images/icon-search.svg?react";
 import SettingsIcon from "../../assets/images/icon-settings.svg?react";
 import LogoutIcon from "../../assets/images/icon-logout.svg?react";
-
+import { setCurrentNote} from "../../store/notesSlice.js";
 import { updateFilter, selectTag } from "../../store/uiSlice";
 
 import "./SideBar.css";
@@ -22,10 +23,11 @@ const SideBar = () => {
 
   const sidebarContents = [
     { name: "My Notes", icon: HomeIcon, filter: "MY_NOTES", className: "home-icon" },
-    { name: "Shared Notes", icon: ArchiveIcon, filter: "SHARED_NOTES", className: "archive-icon" },
+    { name: "Shared Notes", icon: ShareIcon, filter: "SHARED_NOTES", className: "share-icon" },
   ];
 
   const setFilter = (filter) => {
+    dispatch(setCurrentNote({ id: null })); 
     dispatch(updateFilter({ filter }));
   };
 
@@ -68,11 +70,11 @@ const SideBar = () => {
         <button className={`nav-item  ${currentFilter == "MY_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("MY_NOTES") }} >
           <HomeIcon className="icon home-icon" />
         </button>
+        <button className={`nav-item  ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("SHARED_NOTES") }} >
+          <ShareIcon className="icon share-icon" />
+        </button>
         <button className={`nav-item  ${currentFilter == "SEARCH" ? "selected" : ""}`} onClick={() => { setFilter("SEARCH") }} >
           <SearchIcon className="icon search-icon" />
-        </button>
-        <button className={`nav-item  ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("SHARED_NOTES") }} >
-          <ArchiveIcon className="icon archive-icon" />
         </button>
         <button className={`nav-item  ${currentFilter == "TAG" ? "selected" : ""}`} onClick={() => { setFilter("TAG") }} >
           <TagIcon className="icon tag-icon" />
