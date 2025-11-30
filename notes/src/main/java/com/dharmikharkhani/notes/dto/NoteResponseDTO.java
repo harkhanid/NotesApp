@@ -13,7 +13,8 @@ public record NoteResponseDTO(
         String content,
         Set<String> tags,
         boolean isShared,
-        Set<CollaboratorDTO> sharedWith
+        Set<CollaboratorDTO> sharedWith,
+        Long ownerId
 ){
     public static NoteResponseDTO from(Note note){
         Set<String> tags = note.getTags().stream()
@@ -32,7 +33,8 @@ public record NoteResponseDTO(
                 note.getContent(),
                 tags,
                 isShared,
-                collaborators
+                collaborators,
+                note.getOwner().getId()
         );
     }
 }

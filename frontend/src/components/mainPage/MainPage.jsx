@@ -11,7 +11,6 @@ import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import ShareModal from "../shareModal/ShareModal.jsx";
 import notesService from "../../Service/notesService.js";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
-import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
 import DeleteIcon from "../../assets/images/icon-delete.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 import ClockIcon from "../../assets/images/icon-clock.svg?react";
@@ -36,11 +35,11 @@ const MainPage = () => {
   let preTitle= "";
   let displayBackPanel = false;
   switch(currentFilter){
-    case "ALL":
-      title="All Notes"
+    case "MY_NOTES":
+      title="My Notes"
       break;
-    case "ARCHIVED":
-      title="Archived Notes"
+    case "SHARED_NOTES":
+      title="Shared Notes"
       break;
     case "SEARCH":
       title="Search";
@@ -98,13 +97,6 @@ const MainPage = () => {
     dispatch(searchNotesAsync(value)); // use fresh input
   }, 300);
 };
-  
-  const toggleArchive = () => {
-    const previousNote = { ...currentNote };
-    const updatedNote = {...currentNote, archiveFlag: true};
-    dispatch(updateNote(updatedNote));
-    dispatch(updateANoteAsync({ note: updatedNote, previousNote }))
-  }
 
   const updateTitle = (title) =>{
     const previousNote = { ...currentNote };
@@ -193,7 +185,6 @@ const MainPage = () => {
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               <div className="top-bar-right">
                 <button className="btn-none" onClick={() => setIsShareModalOpen(true)}><ShareIcon /></button>
-                <button className="btn-none" onClick={toggleArchive}><ArchiveIcon /></button>
                 <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
               </div>
             </div>
@@ -228,7 +219,6 @@ const MainPage = () => {
       {currentNoteId !== null && currentFilter !== "SETTINGS" && (
         <div className="right-sidebar flow-content">
           <button className="btn full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon /><p>Share Note</p></button>
-          <button className="btn full-width split preset-4" onClick={toggleArchive}><ArchiveIcon /><p>Archieve Note</p></button>
           <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
         </div>
       )}

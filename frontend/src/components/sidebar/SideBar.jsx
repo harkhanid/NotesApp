@@ -21,8 +21,8 @@ const SideBar = () => {
   const tags = useSelector((state) => state.notes.tags);
 
   const sidebarContents = [
-    { name: "All Notes", icon: HomeIcon, filter: "ALL", className: "home-icon" },
-    { name: "Archieved Notes", icon: ArchiveIcon, filter: "ARCHIVED", className: "archive-icon" },
+    { name: "My Notes", icon: HomeIcon, filter: "MY_NOTES", className: "home-icon" },
+    { name: "Shared Notes", icon: ArchiveIcon, filter: "SHARED_NOTES", className: "archive-icon" },
   ];
 
   const setFilter = (filter) => {
@@ -65,13 +65,13 @@ const SideBar = () => {
         </div>
       </div>
       <div className="navbar-mobile">
-        <button className={`nav-item  ${currentFilter == "ALL" ? "selected" : ""}`} onClick={() => { setFilter("ALL") }} >
+        <button className={`nav-item  ${currentFilter == "MY_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("MY_NOTES") }} >
           <HomeIcon className="icon home-icon" />
         </button>
         <button className={`nav-item  ${currentFilter == "SEARCH" ? "selected" : ""}`} onClick={() => { setFilter("SEARCH") }} >
           <SearchIcon className="icon search-icon" />
         </button>
-        <button className={`nav-item  ${currentFilter == "ARCHIVED" ? "selected" : ""}`} onClick={() => { setFilter("ARCHIVED") }} >
+        <button className={`nav-item  ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("SHARED_NOTES") }} >
           <ArchiveIcon className="icon archive-icon" />
         </button>
         <button className={`nav-item  ${currentFilter == "TAG" ? "selected" : ""}`} onClick={() => { setFilter("TAG") }} >

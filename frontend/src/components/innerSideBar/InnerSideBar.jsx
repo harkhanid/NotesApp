@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {motion, Reorder} from "framer-motion";
 
@@ -20,20 +20,21 @@ const InnerSideBar = () => {
   const searchIds = useSelector((state)=> state.notes.searchIds);
   const tagFromStore = useSelector((state)=> state.ui.selectedTag);
   const tags = useSelector((state)=> state.notes.tags);
+  const currentUser = useSelector((state)=> state.auth.user);
   
   let notesList=[];
   let emptyMessage = "";
   let descritionMessage=null;
 
   switch(currentFilter){
-    case "ALL":
-      emptyMessage = "You don’t have any notes yet. Start a new note to capture your thoughts and ideas.";
-      notesList = allNotesList.filter((note)=> !note.archiveFlag);
+    case "MY_NOTES":
+      emptyMessage = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
+      notesList = allNotesList.filter((note)=> note.ownerId === currentUser?.id);
       break;
-    case "ARCHIVED":
-      emptyMessage="No notes have been archived yet. Move notes here for safekeeping, or create a new note.";
-      descritionMessage= "All your archived notes are stored here. You can restore or delete them anytime.";
-      notesList = allNotesList.filter((note)=> note.archiveFlag);
+    case "SHARED_NOTES":
+      emptyMessage="No notes have been shared with you yet.";
+      descritionMessage= "All notes shared with you are stored here.";
+      notesList = allNotesList.filter((note)=> note.ownerId !== currentUser?.id);
       break;
     case "SEARCH":
       if(queryFromStore.length > 0){
@@ -83,7 +84,6 @@ const InnerSideBar = () => {
   const createNewNote = () =>{
     const newNote = {
       title:"",
-      archiveFlag: false,
       tags:[],
       date: Date.now(),
       content:""
