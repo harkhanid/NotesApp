@@ -33,7 +33,13 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 	        String email = null;
 	        String token = null;
 
-	        if (request.getCookies() != null) {
+	        // Check Authorization header first (for WebSocket/API authentication)
+	        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	            token = authHeader.substring(7);  // Remove "Bearer " prefix
+	        }
+
+	        // Fallback to cookie-based authentication (for browser requests)
+	        if (token == null && request.getCookies() != null) {
 	            for (Cookie cookie : request.getCookies()) {
 	                if (cookie.getName().equals("token")) {
 	                    token = cookie.getValue();
@@ -52,7 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 	            SecurityContextHolder.getContext().setAuthentication(auth);
 	        }
 
-	        filterChain.doFilter(request, response);		
+	        filterChain.doFilter(request, response);
 	}
 
 }
