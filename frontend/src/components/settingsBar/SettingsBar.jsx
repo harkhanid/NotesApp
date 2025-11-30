@@ -28,10 +28,10 @@ const SettingsBar = () => {
   const currentFont = useSelector((state)=> state.ui.font);
   const [currentSetting, setCurrentSetting] = useState(null);//Color Theme
   const settingsContent = [
-      { name: "Color Theme", icon: SunIcon, filter: "ALL" , className: "home-icon"},
-      { name: "Change Font", icon: FontIcon, filter: "ARCHIVED", className: "archive-icon" },
-      { name: "Change Password", icon: LockIcon, filter: "TAG", className: "tag-icon" },
-      { name: "Logout", icon: LogoutIcon, filter: "SETTING", className: "setting-icon" },
+      { name: "Color Theme", icon: SunIcon, filter: "COLOR_THEME" , className: "home-icon"},
+      { name: "Change Font", icon: FontIcon, filter: "FONT", className: "tag-icon" },
+      { name: "Change Password", icon: LockIcon, filter: "PASSWORD", className: "tag-icon" },
+      { name: "Logout", icon: LogoutIcon, filter: "LOGOUT", className: "setting-icon" },
     ];
   const themeOptions= [{ name: "Light Mode", icon: SunIcon, className: "home-icon", description: "Pick a clean and classic light theme"},
                         { name: "Dark Mode", icon: MoonIcon, className: "home-icon", description: "A dark theme that is easy on the eyes for night time use"},

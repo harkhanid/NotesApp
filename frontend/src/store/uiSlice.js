@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   selectedNoteId: null,
-  filter: "ALL",
+  filter: "MY_NOTES",
   searchQuery: "",
   selectedTag: "",
   status: "idle",
