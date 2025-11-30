@@ -7,6 +7,7 @@ import TagIcon from "../../assets/images/icon-tag.svg?react";
 
 import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.js";
 import { selectTag } from "../../store/uiSlice";
+import { formatCreatedDate } from "../../utils/dateUtils.js";
 
 import "./InnerSideBar.css";
 
@@ -145,7 +146,7 @@ const InnerSideBar = () => {
                       ))
                     }
                     </div>
-                  <p className="preset-6">{new Date(note.date).toLocaleDateString()}</p>
+                  <p className="preset-6">{note.createdAt ? formatCreatedDate(note.createdAt) : ''}</p>
                 </motion.div>
               </Reorder.Item>
               )

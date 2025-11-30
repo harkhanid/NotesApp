@@ -10,6 +10,7 @@ import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import ShareModal from "../shareModal/ShareModal.jsx";
 import notesService from "../../Service/notesService.js";
+import { formatCreatedDate, formatCreatedDateTime } from "../../utils/dateUtils.js";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import DeleteIcon from "../../assets/images/icon-delete.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
@@ -194,7 +195,7 @@ const MainPage = () => {
                 <div className="note-metadata preset-5 flow-content xxs-spacer">
                   <div className="split">
                     <div className="split metadata_key">
-                      <TagIcon className="icon"/>
+                      <TagIcon className="icon tag-icon"/>
                       <p className="">Tags</p>
                     </div>
                     <div className="tags-input-wrapper">
@@ -206,7 +207,9 @@ const MainPage = () => {
                       <ClockIcon className="icon"/>
                       <p className="">Created At</p>
                     </div>
-                    <p className="">29 OCT 2025</p>
+                    <p className="" >
+                      {currentNote.createdAt ? formatCreatedDate(currentNote.createdAt) : 'N/A'}
+                    </p>
                   </div>
                 </div>
                 <hr />
@@ -218,8 +221,8 @@ const MainPage = () => {
       }
       {currentNoteId !== null && currentFilter !== "SETTINGS" && (
         <div className="right-sidebar flow-content">
-          <button className="btn full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon /><p>Share Note</p></button>
-          <button className="btn full-width split preset-4" onClick={handleDelete}><DeleteIcon /><p>Delete Note</p></button>
+          <button className="btn btn-secondary full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon className="icon" /><p>Share Note</p></button>
+          <button className="btn btn-secondary full-width split preset-4" onClick={handleDelete}><DeleteIcon className="icon delete-icon"  /><p>Delete Note</p></button>
         </div>
       )}
       <ShareModal

@@ -129,7 +129,6 @@
 
 .right-sidebar .btn {
   text-align: left;
-  background: none;
   gap: 0.75rem;
   align-items: center;
   border: 1px solid var(--clr-neutral-300)
@@ -156,7 +155,7 @@
   color: var(--clr-neutral-950);
 }
 
-.tags-input-wrapper .ProseMirror.is-empty::before {
+.tags-input-wrapper .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);
   color: var(--clr-neutral-400);
   pointer-events: none;

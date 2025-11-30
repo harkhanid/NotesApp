@@ -2,12 +2,13 @@ import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import Text from "@tiptap/extension-text";
 import { Document } from "@tiptap/extension-document";
+import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Extension } from '@tiptap/core';
 
-// Single-line document (no paragraphs)
+// Single-line document with paragraph
 const SingleLineDocument = Document.extend({
-  content: 'text*',
+  content: 'paragraph',
 });
 
 // Extension to handle comma input explicitly
@@ -31,6 +32,7 @@ const CommaSupport = Extension.create({
 
 const TagEditor = ({ initialTags, onUpdate }) => {
   // Convert tags array to CSV string for display
+  console.log("Initial Tags in TagEditor:", initialTags);
   const tagsToCSV = (tags) => {
     return Array.isArray(tags) ? tags.join(", ") : "";
   };
@@ -48,13 +50,14 @@ const TagEditor = ({ initialTags, onUpdate }) => {
   const editor = useEditor({
     extensions: [
       SingleLineDocument,
+      Paragraph,
       Text,
       Placeholder.configure({
         placeholder: "Add tags (comma separated)...",
       }),
       CommaSupport,
     ],
-    content: tagsToCSV(initialTags),
+    content: tagsToCSV(initialTags ),
     onBlur: ({ editor }) => {
       // Only parse and update when user stops editing
       const csvText = editor.getText();
@@ -74,8 +77,6 @@ const TagEditor = ({ initialTags, onUpdate }) => {
       }
     }
   }, [initialTags, editor]);
-
-  if (!editor) return null;
 
   return <EditorContent editor={editor} />;
 };

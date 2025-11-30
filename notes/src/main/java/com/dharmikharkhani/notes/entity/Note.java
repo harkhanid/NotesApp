@@ -1,5 +1,6 @@
 package com.dharmikharkhani.notes.entity;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import com.dharmikharkhani.notes.auth.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,8 +20,11 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Note {
 
         @Id
@@ -56,6 +61,10 @@ public class Note {
 	    )
         @JsonIgnore
 	    private Set<User> sharedWith = new HashSet<>();
+
+	    @CreatedDate
+	    @Column(nullable = false, updatable = false)
+	    private LocalDateTime createdAt;
 
 	public UUID getId() {
 		return id;
@@ -104,5 +113,13 @@ public class Note {
 	public void setSharedWith(Set<User> sharedWith) {
 		this.sharedWith = sharedWith;
 	}
-}	
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+}
 
