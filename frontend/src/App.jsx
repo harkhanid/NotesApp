@@ -8,7 +8,9 @@ import LoginPage from './components/loginPage/LoginPage.jsx';
 import ResetPage from './components/resetPage/ResetPage.jsx';
 import SettingsPage from './components/settings/SettingsPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import ToastContainer from './components/common/ToastContainer.jsx';
 import { checkAuth } from './store/authSlice.js';
+import { fetchPreferencesAsync } from './store/uiSlice.js';
 
 import './Fonts.css'
 import './App.css'
@@ -16,10 +18,18 @@ import './App.css'
 function App() {
   const dispatch = useDispatch();
   const currentFont = useSelector((state) => state.ui.font);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+
+  // Fetch preferences when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchPreferencesAsync());
+    }
+  }, [isAuthenticated, dispatch]);
 
   let fontClass = "";
   switch (currentFont) {
@@ -30,7 +40,7 @@ function App() {
       fontClass = "font-noto";
       break;
     case "Mono":
-      fontClass = "font-mono";
+      fontClass = "font-sourcecode";
       break;
     default:
       fontClass = "font-sourcecode";
@@ -48,6 +58,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
+      <ToastContainer />
     </div>
   )
 }

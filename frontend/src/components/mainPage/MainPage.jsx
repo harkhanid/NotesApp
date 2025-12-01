@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync, fetchAllNotesAsync } from "../../store/notesSlice.js";
 import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
+import { addToast } from "../../store/toastSlice.js";
 
 import { useDispatch, useSelector } from "react-redux";
 import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
@@ -9,6 +10,7 @@ import Editor from "../editor/Editor.jsx";
 import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import ShareModal from "../shareModal/ShareModal.jsx";
+import ConfirmDialog from "../common/ConfirmDialog.jsx";
 import notesService from "../../Service/notesService.js";
 import { formatCreatedDate, formatCreatedDateTime } from "../../utils/dateUtils.js";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
@@ -28,6 +30,7 @@ const MainPage = () => {
   const currentNote =  useSelector((state)=> currentNoteId == null ? null: state.notes.byId[currentNoteId]);
   const currentUser = useSelector((state) => state.auth.user);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   let title = "";
   const timeoutNoteUpdateRef = useRef(null);
   const timeoutSearchUpdateRef = useRef(null);
@@ -125,13 +128,32 @@ const MainPage = () => {
   }
 
   const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  }
+
+  const handleConfirmDelete = async () => {
     if (!currentNote) return;
     const noteData = { ...currentNote };
-    // Optimistic delete
-    dispatch(deleteNote({ id: currentNoteId }));
-    dispatch(setCurrentNote({ id: null }));
-    // Background API call
-    dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
+    const noteTitle = currentNote.title || "Untitled Note";
+
+    try {
+      // Optimistic delete
+      dispatch(deleteNote({ id: currentNoteId }));
+      dispatch(setCurrentNote({ id: null }));
+      setIsDeleteModalOpen(false);
+
+      // Background API call
+      const result = await dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
+
+      if (deleteNoteAsync.fulfilled.match(result)) {
+        dispatch(addToast({ type: "success", message: `"${noteTitle}" deleted successfully` }));
+      } else {
+        // Rollback already happened in the thunk
+        dispatch(addToast({ type: "error", message: "Failed to delete note" }));
+      }
+    } catch (error) {
+      dispatch(addToast({ type: "error", message: "Failed to delete note" }));
+    }
   }
 
   const handleShare = async (emails) => {
@@ -139,9 +161,12 @@ const MainPage = () => {
     try {
       await notesService.shareNote(currentNoteId, emails);
       // Refresh the notes list to get updated sharedWith data
-      dispatch(fetchAllNotesAsync());
+      await dispatch(fetchAllNotesAsync());
+      dispatch(addToast({ type: "success", message: `Note shared with ${emails.join(", ")}` }));
     } catch (error) {
       console.error("Failed to share note:", error);
+      const errorMessage = error.message || "Failed to share note";
+      dispatch(addToast({ type: "error", message: errorMessage }));
       throw error;
     }
   }
@@ -151,9 +176,12 @@ const MainPage = () => {
     try {
       await notesService.removeCollaborator(currentNoteId, email);
       // Refresh the notes list to get updated sharedWith data
-      dispatch(fetchAllNotesAsync());
+      await dispatch(fetchAllNotesAsync());
+      dispatch(addToast({ type: "success", message: `Collaborator removed` }));
     } catch (error) {
       console.error("Failed to remove collaborator:", error);
+      const errorMessage = error.message || "Failed to remove collaborator";
+      dispatch(addToast({ type: "error", message: errorMessage }));
       throw error;
     }
   }
@@ -231,6 +259,16 @@ const MainPage = () => {
         note={currentNote}
         onShare={handleShare}
         onRemoveCollaborator={handleRemoveCollaborator}
+      />
+      <ConfirmDialog
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Note"
+        message="Are you sure you want to delete this note? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
       />
     </div>
   );

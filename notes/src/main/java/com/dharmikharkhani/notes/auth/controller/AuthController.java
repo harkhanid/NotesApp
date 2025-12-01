@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -122,5 +123,19 @@ public class AuthController {
             String token = jwtUtil.generateToken(user.getUsername(), user.getRoles(), "LOCAL");
 
             return ResponseEntity.ok(Map.of("token", token));
+        }
+
+        /**
+         * Check if a user exists by email
+         * Used for validating email addresses before sharing notes
+         */
+        @GetMapping("/check-email")
+        public ResponseEntity<?> checkEmailExists(@RequestParam String email, Authentication authentication) {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+            }
+
+            boolean exists = userRepo.findByEmail(email).isPresent();
+            return ResponseEntity.ok(Map.of("exists", exists, "email", email));
         }
 }

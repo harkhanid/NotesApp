@@ -111,7 +111,15 @@ public class NoteController {
             @PathVariable UUID id,
             @RequestBody ShareNoteRequestDTO shareRequest) {
         String userEmail = authentication.getName();
-        NoteResponseDTO note = noteService.shareNote(id, shareRequest.emails(), userEmail);
+        if(!authorizationService.isAllowedToDeleteNote(id)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        NoteResponseDTO note;
+        try {
+             note = noteService.shareNote(id, shareRequest.emails(), userEmail);
+        }catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.ok(note);
     }
 
@@ -121,7 +129,16 @@ public class NoteController {
             @PathVariable UUID id,
             @PathVariable String email) {
         String userEmail = authentication.getName();
-        NoteResponseDTO note = noteService.removeCollaborator(id, email, userEmail);
+        if(!authorizationService.isAllowedToDeleteNote(id)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        NoteResponseDTO note;
+        try {
+            note = noteService.removeCollaborator(id, email, userEmail);
+        }catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         return ResponseEntity.ok(note);
     }
 

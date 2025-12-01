@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import preferencesService from "../Service/preferencesService";
 
 const initialState = {
   selectedNoteId: null,
@@ -6,8 +7,35 @@ const initialState = {
   searchQuery: "",
   selectedTag: "",
   status: "idle",
-  font: "sans-serif",
+  font: "Sans Serif",
+  theme: null,
+  preferencesLoading: false,
+  preferencesError: null,
 };
+
+export const fetchPreferencesAsync = createAsyncThunk(
+  "ui/fetchPreferences",
+  async (_, thunkAPI) => {
+    try {
+      const preferences = await preferencesService.getPreferences();
+      return preferences;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updatePreferencesAsync = createAsyncThunk(
+  "ui/updatePreferences",
+  async (preferences, thunkAPI) => {
+    try {
+      const updatedPreferences = await preferencesService.updatePreferences(preferences);
+      return updatedPreferences;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
 
 export const uiSlice = createSlice({
   name: "ui",
@@ -36,6 +64,37 @@ export const uiSlice = createSlice({
       const { font } = action.payload;
       state.font = font;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch preferences
+      .addCase(fetchPreferencesAsync.pending, (state) => {
+        state.preferencesLoading = true;
+        state.preferencesError = null;
+      })
+      .addCase(fetchPreferencesAsync.fulfilled, (state, action) => {
+        state.preferencesLoading = false;
+        state.font = action.payload.font || "Sans Serif";
+        state.theme = action.payload.theme || null;
+      })
+      .addCase(fetchPreferencesAsync.rejected, (state, action) => {
+        state.preferencesLoading = false;
+        state.preferencesError = action.payload;
+      })
+      // Update preferences
+      .addCase(updatePreferencesAsync.pending, (state) => {
+        state.preferencesLoading = true;
+        state.preferencesError = null;
+      })
+      .addCase(updatePreferencesAsync.fulfilled, (state, action) => {
+        state.preferencesLoading = false;
+        state.font = action.payload.font || "Sans Serif";
+        state.theme = action.payload.theme || null;
+      })
+      .addCase(updatePreferencesAsync.rejected, (state, action) => {
+        state.preferencesLoading = false;
+        state.preferencesError = action.payload;
+      });
   },
 });
 
