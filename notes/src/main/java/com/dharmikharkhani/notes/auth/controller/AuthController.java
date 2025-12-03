@@ -23,6 +23,7 @@ import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
 import com.dharmikharkhani.notes.auth.security.JwtUtil;
 import com.dharmikharkhani.notes.dto.UserResponseDTO;
+import com.dharmikharkhani.notes.service.NoteService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,6 +33,7 @@ public class AuthController {
 	    private final BCryptPasswordEncoder passwordEncoder;
 	    private final AuthenticationManager authenticationManager;
 	    private final JwtUtil jwtUtil;
+	    private final NoteService noteService;
 
 	    @Value("${app.cookie.secure}")
 	    private boolean cookieSecure;
@@ -40,11 +42,13 @@ public class AuthController {
 	    private String cookieSameSite;
 
 	    public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
-	                          AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+	                          AuthenticationManager authenticationManager, JwtUtil jwtUtil,
+	                          NoteService noteService) {
 	        this.userRepo = userRepo;
 	        this.passwordEncoder = passwordEncoder;
 	        this.authenticationManager = authenticationManager;
 	        this.jwtUtil = jwtUtil;
+	        this.noteService = noteService;
 	    }
 
 	    @PostMapping("/register")
@@ -60,7 +64,11 @@ public class AuthController {
 	        u.setPassword(passwordEncoder.encode(password));
 	        u.setRoles("ROLE_user");
             u.setProvider("JWT");
-	        userRepo.save(u);
+	        User savedUser = userRepo.save(u);
+
+	        // Create welcome note for new user
+	        noteService.createWelcomeNote(savedUser);
+
 	        return ResponseEntity.ok(Map.of("msg", "user created"));
 	    }
 

@@ -156,5 +156,65 @@ public class NoteService {
 
         return NoteResponseDTO.from(savedNote);
     }
+
+    /**
+     * Creates a welcome note for new users
+     */
+    @Transactional
+    public void createWelcomeNote(User user) {
+        String welcomeContent = "<h2>Welcome to NotesApp! 👋</h2>" +
+                "<h3>About the Developer</h3>" +
+                "<p>Hi there! I'm a software engineer who loves building things. " +
+                "This app is a personal project where I explore new technologies and create useful tools. " +
+                "I hope you enjoy using it as much as I enjoyed building it!</p>" +
+                "<h3>⚠️ Important Notice</h3>" +
+                "<p><strong>This application is for educational and demonstration purposes only.</strong> " +
+                "It's not a production-grade service, so please don't store sensitive or critical information here. " +
+                "Feel free to explore, test features, and use it for learning!</p>" +
+                "<h3>✨ Key Features</h3>" +
+                "<ul>" +
+                "<li><strong>Real-time Collaborative Editing:</strong> Share your notes with others and edit together in real-time! " +
+                "You'll see each other's cursors and changes instantly.</li>" +
+                "<li><strong>Rich Text Editor:</strong> Format your notes with headings, lists, bold, italics, and more.</li>" +
+                "<li><strong>Tagging System:</strong> Organize your notes with tags for easy categorization and search.</li>" +
+                "<li><strong>Note Sharing:</strong> Invite collaborators by email to work together on your notes.</li>" +
+                "</ul>" +
+                "<h3>🚀 Future Roadmap</h3>" +
+                "<p>Exciting features coming soon:</p>" +
+                "<ul>" +
+                "<li><strong>Semantic Search:</strong> Find notes by meaning, not just keywords. Ask questions and get intelligent answers from your notes.</li>" +
+                "<li><strong>Graph View:</strong> Visualize connections between your notes with an interactive knowledge graph.</li>" +
+                "<li><strong>Smart Linking:</strong> Automatically discover and suggest related notes.</li>" +
+                "<li><strong>AI-Powered Summaries:</strong> Get quick summaries of long notes.</li>" +
+                "</ul>" +
+                "<h3>Getting Started</h3>" +
+                "<p>Here are some tips to get you started:</p>" +
+                "<ol>" +
+                "<li>Create a new note using the <strong>+</strong> button</li>" +
+                "<li>Try adding tags to organize your notes</li>" +
+                "<li>Share a note with a friend by clicking the <strong>Share</strong> button</li>" +
+                "<li>Experience real-time collaboration by editing together!</li>" +
+                "</ol>" +
+                "<p><em>Feel free to delete this note once you're familiar with the app. Happy note-taking! 📝</em></p>";
+
+        Note welcomeNote = new Note();
+        welcomeNote.setOwner(user);
+        welcomeNote.setTitle("Welcome to NotesApp!");
+        welcomeNote.setContent(welcomeContent);
+
+        // Add "welcome" tag
+        Tag welcomeTag = tagRepository.findByName("welcome")
+                .orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setName("welcome");
+                    return tagRepository.save(newTag);
+                });
+
+        Set<Tag> tags = new HashSet<>();
+        tags.add(welcomeTag);
+        welcomeNote.setTags(tags);
+
+        noteRepository.save(welcomeNote);
+    }
 }
 

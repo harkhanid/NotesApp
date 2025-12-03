@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.auth.repository.UserRepository;
+import com.dharmikharkhani.notes.service.NoteService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -20,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler{
 	 private final JwtUtil jwtUtil;
 	 private final UserRepository userRepo;
+	 private final NoteService noteService;
 
 	 @Value("${app.frontend.url}")
 	 private String frontendUrl;
@@ -27,9 +29,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 	 @Value("${app.cookie.secure}")
 	 private boolean cookieSecure;
 
-	 public OAuth2AuthenticationSuccessHandler(JwtUtil jwtUtil, UserRepository userRepo) {
+	 public OAuth2AuthenticationSuccessHandler(JwtUtil jwtUtil, UserRepository userRepo, NoteService noteService) {
         this.jwtUtil = jwtUtil;
         this.userRepo = userRepo;
+        this.noteService = noteService;
     }
 
     @Override
@@ -38,7 +41,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = (String) oauthUser.getAttribute("email");
+
+        // Check if user already exists
+        boolean isNewUser = !userRepo.existsByUsername(email);
+
         User user = userRepo.findByEmail(email).orElseGet(()-> userRepo.save(new User(null, email, email, "","ROLE_user","GOOGLE")));
+
+        // Create welcome note for new OAuth2 users
+        if (isNewUser) {
+            noteService.createWelcomeNote(user);
+        }
+
         String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), "GOOGLE");
 
         // Set HttpOnly cookie with environment-based security settings
