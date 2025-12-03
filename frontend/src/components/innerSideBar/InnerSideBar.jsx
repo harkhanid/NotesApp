@@ -6,7 +6,8 @@ import PlusIcon from "../../assets/images/icon-plus.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 
 import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.js";
-import { selectTag } from "../../store/uiSlice";
+import { selectTag, updateFilter } from "../../store/uiSlice";
+import { formatCreatedDate } from "../../utils/dateUtils.js";
 
 import "./InnerSideBar.css";
 
@@ -21,13 +22,16 @@ const InnerSideBar = () => {
   const tagFromStore = useSelector((state)=> state.ui.selectedTag);
   const tags = useSelector((state)=> state.notes.tags);
   const currentUser = useSelector((state)=> state.auth.user);
-  
+
+  const MAX_VISIBLE_TAGS = 3;
+
   let notesList=[];
   let emptyMessage = "";
   let descritionMessage=null;
 
   switch(currentFilter){
     case "MY_NOTES":
+      console.log("MY_NOTES filter applied");
       emptyMessage = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
       notesList = allNotesList.filter((note)=> note.ownerId === currentUser?.id);
       break;
@@ -59,10 +63,9 @@ const InnerSideBar = () => {
   useEffect(() => {
     // Skip auto-selection for SETTINGS view
     if (currentFilter === "SETTINGS") return;
-
-    // Check if we're on desktop view (768px is common mobile breakpoint)
+    
     const isDesktop = window.innerWidth >= 768;
-
+    console.log("InnerSideBar:", isDesktop, notesList, currentNoteId);
     if (isDesktop) {
       if (notesList.length > 0) {
         // Check if current note is in the filtered list
@@ -79,7 +82,7 @@ const InnerSideBar = () => {
         }
       }
     }
-  }, [currentFilter, tagFromStore, searchIds, currentNoteId, dispatch]);
+  }, [currentFilter, tagFromStore, searchIds, currentNoteId,notesList, dispatch]);
 
   const createNewNote = () =>{
     const newNote = {
@@ -91,6 +94,7 @@ const InnerSideBar = () => {
     const addNote = addAnote(newNote);
     const tempId = addNote.payload.id;
     dispatch(addNote);
+    dispatch(updateFilter({filter:"MY_NOTES"}));
     dispatch(setCurrentNote({id: tempId}));
     dispatch(addAnoteAsync({ note: addNote.payload, tempId }));
   }
@@ -102,6 +106,33 @@ const InnerSideBar = () => {
     if(id != currentNoteId){
       dispatch(setCurrentNote({id:id}));
     }
+  }
+
+  const renderTags = (tags) => {
+    if (tags.length === 0) {
+      return <span className='preset-6 tags-placeholder'>No Tags</span>;
+    }
+
+    const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
+    const hiddenCount = tags.length - MAX_VISIBLE_TAGS;
+
+    return (
+      <>
+        <div className="note-tags-inner">
+          {visibleTags.map((tag, index) => (
+            <span key={index} className="tag preset-6">{tag}</span>
+          ))}
+        </div>
+        {hiddenCount > 0 && (
+          <span className="tag-count preset-6">
+            +{hiddenCount} more
+            <div className="note-tags-tooltip">
+              <strong>All tags:</strong> {tags.join(', ')}
+            </div>
+          </span>
+        )}
+      </>
+    );
   }
 
   return (
@@ -139,13 +170,9 @@ const InnerSideBar = () => {
                 >
                   <p className="preset-3">{note.title || "New Note"}</p>
                   <div className="note-tags split">
-                    { note.tags.length == 0 ? <span className='preset-6 tags-placeholder'>No Tags</span>:
-                      note.tags.map((tag) =>(
-                        <span className="tag preset-6">{tag}</span>
-                      ))
-                    }
-                    </div>
-                  <p className="preset-6">{new Date(note.date).toLocaleDateString()}</p>
+                    {renderTags(note.tags)}
+                  </div>
+                  <p className="preset-6">{note.createdAt ? formatCreatedDate(note.createdAt) : ''}</p>
                 </motion.div>
               </Reorder.Item>
               )

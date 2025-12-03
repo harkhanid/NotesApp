@@ -3,6 +3,7 @@ import com.dharmikharkhani.notes.auth.model.User;
 import com.dharmikharkhani.notes.entity.Note;
 import com.dharmikharkhani.notes.entity.Tag;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -14,7 +15,8 @@ public record NoteResponseDTO(
         Set<String> tags,
         boolean isShared,
         Set<CollaboratorDTO> sharedWith,
-        Long ownerId
+        Long ownerId,
+        LocalDateTime createdAt
 ){
     public static NoteResponseDTO from(Note note){
         Set<String> tags = note.getTags().stream()
@@ -34,7 +36,8 @@ public record NoteResponseDTO(
                 tags,
                 isShared,
                 collaborators,
-                note.getOwner().getId()
+                note.getOwner().getId(),
+                note.getCreatedAt()
         );
     }
 }

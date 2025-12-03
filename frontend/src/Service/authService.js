@@ -65,12 +65,35 @@ const getWebSocketToken = async () => {
   }
 };
 
+/**
+ * Check if a user exists by email
+ * Used for validating email addresses before sharing notes
+ */
+const checkEmailExists = async (email) => {
+  try {
+    const response = await fetch(API_URL + `/check-email?email=${encodeURIComponent(email)}`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to check email");
+    }
+
+    const data = await response.json();
+    return data.exists;
+  } catch (error) {
+    console.error("Error checking email:", error);
+    return false;
+  }
+};
+
 const authService = {
   register,
   login,
   logout,
   checkAuthStatus,
   getWebSocketToken,
+  checkEmailExists,
 };
 
 export default authService;

@@ -114,7 +114,7 @@ hr{
   fill:var(--SVG_COLOR, var(--clr-neutral-600));
 }
 
-.archive-icon, .tag-icon {
+.archive-icon, .tag-icon, .delete-icon, .share-icon {
   stroke:var(--SVG_COLOR, var(--clr-neutral-600));
 }
 
@@ -214,6 +214,7 @@ l-spacer > *{
 .btn{
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
+  background:none;
 }
 
 .btn-primary{
@@ -225,6 +226,11 @@ l-spacer > *{
 .btn-primary:hover{
   background-color: var(--clr-blue-700);
 }
+
+.btn-secondary:hover{
+   background-color: var(--clr-neutral-100);
+}
+
 
 @media (min-width: 75em) {
   .full-width{

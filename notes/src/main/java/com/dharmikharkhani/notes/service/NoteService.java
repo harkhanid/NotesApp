@@ -128,16 +128,8 @@ public class NoteService {
 
     @Transactional
     public NoteResponseDTO shareNote(UUID noteId, Set<String> emails, String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new ResourceNotFoundException());
-
-        // Verify the user is the owner
-        if (!note.getOwner().getId().equals(owner.getId())) {
-            throw new RuntimeException("Only the note owner can share the note");
-        }
 
         // Find all users by email and add to sharedWith
         Set<User> usersToShare = emails.stream()
@@ -147,22 +139,14 @@ public class NoteService {
 
         note.getSharedWith().addAll(usersToShare);
         Note savedNote = noteRepository.save(note);
-
         return NoteResponseDTO.from(savedNote);
     }
 
     @Transactional
     public NoteResponseDTO removeCollaborator(UUID noteId, String collaboratorEmail, String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new ResourceNotFoundException());
-
-        // Verify the user is the owner
-        if (!note.getOwner().getId().equals(owner.getId())) {
-            throw new RuntimeException("Only the note owner can remove collaborators");
-        }
 
         User collaborator = userRepository.findByEmail(collaboratorEmail)
                 .orElseThrow(() -> new RuntimeException("User not found: " + collaboratorEmail));

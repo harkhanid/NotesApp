@@ -15,7 +15,7 @@ import LockIcon from "../../assets/images/icon-lock.svg?react";
 import LogoutIcon from "../../assets/images/icon-logout.svg?react";
 import { logout } from "../../store/authSlice";
 
-import { updateTheme, updateFont } from "../../store/uiSlice.js";
+import { updatePreferencesAsync } from "../../store/uiSlice.js";
 import "./InnerSideBar.css";
 
 
@@ -26,9 +26,9 @@ const SettingsBar = () => {
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const currentTheme = useSelector((state)=> state.ui.theme);
   const currentFont = useSelector((state)=> state.ui.font);
-  const [currentSetting, setCurrentSetting] = useState(null);//Color Theme
+  const [currentSetting, setCurrentSetting] = useState("Change Font");//Color Theme
   const settingsContent = [
-      { name: "Color Theme", icon: SunIcon, filter: "COLOR_THEME" , className: "home-icon"},
+      // { name: "Color Theme", icon: SunIcon, filter: "COLOR_THEME" , className: "home-icon"},
       { name: "Change Font", icon: FontIcon, filter: "FONT", className: "tag-icon" },
       { name: "Change Password", icon: LockIcon, filter: "PASSWORD", className: "tag-icon" },
       { name: "Logout", icon: LogoutIcon, filter: "LOGOUT", className: "setting-icon" },
@@ -68,7 +68,7 @@ const SettingsBar = () => {
       break;
     case "Change Password":
       Title="Change Password";
-      description="Update your account password regularly to keep your account secure.";
+      description="This Functionality is currently unavailable. Please use forgot password on the login page to reset your password.";
       break;
     default:
   }
@@ -76,7 +76,7 @@ const SettingsBar = () => {
   return (
     <>
     <div className={`inner-sidebar ${currentSetting == null ? "" : "mobile-hide" }` } >
-        <ul className="flow-content xxs-spacer">
+        <ul className="flow-content xsm-spacer">
           {settingsContent.map((item, index) => {
             const IconComponent = item.icon;
             return (
@@ -88,7 +88,8 @@ const SettingsBar = () => {
           )}
         </ul>
     </div>
-    { <div className={`note-content settings-page flow-content xxs-spacer ${currentSetting != null ? "" :" mobile-hide" } `}>
+    { 
+      <div className={`note-content settings-page flow-content xsm-spacer ${currentSetting != null ? "" :" mobile-hide" } `}>
       <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
         <button className="btn-none goback-btn" onClick={()=>{setCurrentSetting(null)}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
       </div>
@@ -98,9 +99,9 @@ const SettingsBar = () => {
         {themeOptions.map((option) => (
         <div
           key={option.name}
-          onClick={() => dispatch(updateTheme({ theme: option.name }))}
+          onClick={() => dispatch(updatePreferencesAsync({ theme: option.name, font: currentFont }))}
           className={`setting-option ${currentTheme === option.name ? "selected" : ""} `}
-        > 
+        >
           <div className="option-icon-container">
             <option.icon className="icon option-icon" />
           </div>
@@ -113,7 +114,7 @@ const SettingsBar = () => {
             name="Theme"
             value={option.name}
             checked={currentTheme === option.name}
-            onChange={() =>dispatch(updateTheme({ theme: option.name }))}
+            onChange={() =>dispatch(updatePreferencesAsync({ theme: option.name, font: currentFont }))}
             className="mt-1"
           />
         </div>
@@ -122,14 +123,14 @@ const SettingsBar = () => {
         {/* <button className='btn btn-primary' onClick={()=>{dispatch(updateTheme({ theme: currentTheme }))}}>Save Changes</button> */}
       </div>
       </div>:
-      currentSetting == "Change Font"? 
+      currentSetting == "Change Font"?
       <div className='theme-settings flow-content xxm-spacer'>
         {fontOptions.map((option) => (
         <div
           key={option.name}
-          onClick={() => dispatch(updateFont({ font: option.name }))}
+          onClick={() => dispatch(updatePreferencesAsync({ font: option.name, theme: currentTheme }))}
           className={`setting-option ${currentFont === option.name ? "selected" : ""} `}
-        > 
+        >
           <div className="option-icon-container">
             <option.icon className="icon option-icon" />
           </div>
@@ -142,7 +143,7 @@ const SettingsBar = () => {
             name="Theme"
             value={option.name}
             checked={currentFont === option.name}
-            onChange={() =>dispatch(updateFont({ font: option.name }))}
+            onChange={() =>dispatch(updatePreferencesAsync({ font: option.name, theme: currentTheme }))}
             className="mt-1"
           />
         </div>
