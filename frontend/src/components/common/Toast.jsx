@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { removeToast } from "../../store/toastSlice";
 import CheckmarkIcon from "../../assets/images/icon-checkmark.svg?react";
 import CrossIcon from "../../assets/images/icon-cross.svg?react";
+import CrossplainIcon from "../../assets/images/icon-cross-plain.svg?react";
 import InfoIcon from "../../assets/images/icon-info.svg?react";
 import "./Toast.css";
 
@@ -12,8 +13,8 @@ const Toast = ({ id, type, message }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      dispatch(removeToast({ id }));
-    }, 5000); // Auto-dismiss after 5 seconds
+      // dispatch(removeToast({ id }));
+    }, 3500); 
 
     return () => clearTimeout(timer);
   }, [id, dispatch]);
@@ -49,7 +50,7 @@ const Toast = ({ id, type, message }) => {
         <p className="toast-message preset-5">{message}</p>
       </div>
       <button className="btn-none toast-close" onClick={handleClose}>
-        <CrossIcon />
+        <CrossplainIcon />
       </button>
     </motion.div>
   );

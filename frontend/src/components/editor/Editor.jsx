@@ -44,7 +44,7 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
 
         const doc = getOrCreateDocument(noteId);
         const userInfo = {
-          username: currentUser?.username || currentUser?.email || 'Anonymous',
+          username: currentUser?.name || currentUser?.email || 'Anonymous',
           email: currentUser?.email || '',
           color: currentUser?.color || generateUserColor(currentUser?.email),
         };
@@ -138,7 +138,7 @@ const Editor = ({ initialContent, onUpdate, id: noteId, currentUser }) => {
           CollaborationCursor.configure({
             provider: providerRef.current,
             user: {
-              name: currentUser?.username || currentUser?.email || 'Anonymous',
+              name: currentUser?.name || currentUser?.email || 'Anonymous',
               email: currentUser?.email || '',
               color: currentUser?.color || generateUserColor(currentUser?.email),
             }

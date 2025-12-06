@@ -47,7 +47,7 @@
     display: block;
     height: 100;
     overflow-y: auto;
-    flex: 17rem 0 0;
+    flex: 15.5rem 0 0;
     border-right: var(--border-grid);
     background-color: var(--clr-neutral-0);
   }

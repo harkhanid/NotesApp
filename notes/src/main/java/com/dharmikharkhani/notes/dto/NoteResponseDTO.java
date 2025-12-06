@@ -16,6 +16,7 @@ public record NoteResponseDTO(
         boolean isShared,
         Set<CollaboratorDTO> sharedWith,
         Long ownerId,
+        CollaboratorDTO owner,
         LocalDateTime createdAt
 ){
     public static NoteResponseDTO from(Note note){
@@ -37,6 +38,7 @@ public record NoteResponseDTO(
                 isShared,
                 collaborators,
                 note.getOwner().getId(),
+                CollaboratorDTO.from(note.getOwner()),
                 note.getCreatedAt()
         );
     }

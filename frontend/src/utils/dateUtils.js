@@ -45,12 +45,8 @@ export const formatCreatedDate = (dateInput) => {
   const options = {
     month: "short",
     day: "numeric",
+    year: "numeric",
   };
-
-  // Add year if it's not the current year
-  if (date.getFullYear() !== now.getFullYear()) {
-    options.year = "numeric";
-  }
 
   return date.toLocaleDateString("en-US", options);
 };

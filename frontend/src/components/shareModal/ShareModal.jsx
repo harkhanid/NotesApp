@@ -101,7 +101,7 @@ const ShareModal = ({ isOpen, onClose, note, onShare, onRemoveCollaborator }) =>
               {note.sharedWith.map((collaborator) => (
                 <li key={collaborator.id} className="collaborator-item split">
                   <div className="collaborator-info">
-                    <p className="preset-5">{collaborator.username }({collaborator.email})</p>
+                    <p className="preset-5">{collaborator.name} ({collaborator.email})</p>
                   </div>
                   <button
                     className="btn-none remove-btn"

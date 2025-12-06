@@ -25,7 +25,7 @@ public class User implements UserDetails {
     @Column(nullable = true, unique = true)
     private String email;
 
-    private String username;
+    private String name;
 
     @Column(nullable = true)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -37,10 +37,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String provider; // Local or GOOGLE
 
-	public User(Long id, String username, String email, String password, String roles, String provider) {
+	public User(Long id, String name, String email, String password, String roles, String provider) {
 		super();
 		this.id = id;
-		this.username = username;
+		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.roles = roles;
@@ -64,8 +64,12 @@ public class User implements UserDetails {
 		return email;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getEmail() {
