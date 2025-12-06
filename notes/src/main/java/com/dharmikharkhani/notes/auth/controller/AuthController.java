@@ -55,12 +55,13 @@ public class AuthController {
 	    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
 	        String email = body.get("email");
 	        String password = body.get("password");
-	        if (email == null || password == null) return ResponseEntity.badRequest().body("username and password required");
-	        if (userRepo.existsByUsername(email)) return ResponseEntity.badRequest().body("username taken");
+	        String name = body.get("name");
+	        if (email == null || password == null || name == null) return ResponseEntity.badRequest().body("email, password, and name required");
+	        if (userRepo.existsByEmail(email)) return ResponseEntity.badRequest().body("email already taken");
 
 	        User u = new User();
 	        u.setEmail(email);
-            u.setUsername(email);
+            u.setName(name);
 	        u.setPassword(passwordEncoder.encode(password));
 	        u.setRoles("ROLE_user");
             u.setProvider("JWT");
@@ -99,7 +100,7 @@ public class AuthController {
 	            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
 	        }
 	        User user = userRepo.findByEmail(authentication.getName()).orElseThrow();
-	        return ResponseEntity.ok(new UserResponseDTO(user.getId(), user.getEmail()));
+	        return ResponseEntity.ok(new UserResponseDTO(user.getId(), user.getEmail(), user.getName()));
 	    }
 
         @PostMapping("/logout")

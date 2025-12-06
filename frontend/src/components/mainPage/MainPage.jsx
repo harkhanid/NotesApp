@@ -11,8 +11,10 @@ import TagEditor from "../editor/TagEditor.jsx";
 import SettingsBar from "../settingsBar/SettingsBar.jsx";
 import ShareModal from "../shareModal/ShareModal.jsx";
 import ConfirmDialog from "../common/ConfirmDialog.jsx";
+import CollaboratorsList from "../collaboration/CollaboratorsList.jsx";
 import notesService from "../../Service/notesService.js";
 import { formatCreatedDate, formatCreatedDateTime } from "../../utils/dateUtils.js";
+import { getProvider } from "../../utils/collaborationManager.js";
 import SettingIcon from "../../assets/images/icon-settings.svg?react";
 import DeleteIcon from "../../assets/images/icon-delete.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
@@ -212,10 +214,12 @@ const MainPage = () => {
           <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "" }` }>
             <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
               <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
-              <div className="top-bar-right">
-                <button className="btn-none" onClick={() => setIsShareModalOpen(true)}><ShareIcon /></button>
-                <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
-              </div>
+              {currentNote?.ownerId === currentUser?.id && (
+                <div className="top-bar-right">
+                  <button className="btn-none" onClick={() => setIsShareModalOpen(true)}><ShareIcon /></button>
+                  <button className="btn-none" onClick={handleDelete}><DeleteIcon /></button>
+                </div>
+              )}
             </div>
             {currentNote &&
             <>
@@ -241,7 +245,9 @@ const MainPage = () => {
                   </div>
                 </div>
                 <hr />
+                <div className="preset-5">
                 <Editor key={currentNoteId} initialContent={currentNote.content} onUpdate={handleContentUpdate} id={currentNoteId} currentUser={currentUser} />
+                </div>
             </>
             }
           </div>
@@ -249,8 +255,14 @@ const MainPage = () => {
       }
       {currentNoteId !== null && currentFilter !== "SETTINGS" && (
         <div className="right-sidebar flow-content">
-          <button className="btn btn-secondary full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon className="icon" /><p>Share Note</p></button>
-          <button className="btn btn-secondary full-width split preset-4" onClick={handleDelete}><DeleteIcon className="icon delete-icon"  /><p>Delete Note</p></button>
+          {currentNote?.ownerId === currentUser?.id && (
+            <>
+              <button className="btn btn-secondary full-width split preset-4" onClick={() => setIsShareModalOpen(true)}><ShareIcon className="icon" /><p>Share Note</p></button>
+              <button className="btn btn-secondary full-width split preset-4" onClick={handleDelete}><DeleteIcon className="icon delete-icon"  /><p>Delete Note</p></button>
+              <hr />
+            </>
+          )}
+          <CollaboratorsList note={currentNote} provider={getProvider(currentNoteId)} />
         </div>
       )}
       <ShareModal

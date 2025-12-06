@@ -6,7 +6,7 @@ import googleIcon from "../../assets/images/icon-google.svg";
 import "./SignUpPage.css";
 
 const SignUpPage = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const SignUpPage = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await authService.register(username, email, password);
+      const response = await authService.register(name, email, password);
       if (response.ok) {
         navigate("/login");
       } else {
@@ -36,8 +36,8 @@ const SignUpPage = () => {
         </div>
         <form className="signup-form flow-content" onSubmit={handleSignUp}>
           <div className="form-group flow-content xxs-spacer">
-            <label htmlFor="username" className="block preset-4">Username</label>
-            <input type="text" id="username" name="username" required value={username} onChange={(e) => setUsername(e.target.value)} />
+            <label htmlFor="name" className="block preset-4">Full Name</label>
+            <input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="form-group flow-content xxs-spacer">
             <label htmlFor="email" className="block preset-4">Email</label>

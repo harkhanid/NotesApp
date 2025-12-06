@@ -43,9 +43,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String email = (String) oauthUser.getAttribute("email");
 
         // Check if user already exists
-        boolean isNewUser = !userRepo.existsByUsername(email);
+        boolean isNewUser = !userRepo.existsByEmail(email);
 
-        User user = userRepo.findByEmail(email).orElseGet(()-> userRepo.save(new User(null, email, email, "","ROLE_user","GOOGLE")));
+        User user = userRepo.findByEmail(email).orElseGet(()-> {
+            String name = (String) oauthUser.getAttribute("name");
+            if (name == null) {
+                name = (String) oauthUser.getAttribute("given_name");
+            }
+            return userRepo.save(new User(null, name, email, "","ROLE_user","GOOGLE"));
+        });
 
         // Create welcome note for new OAuth2 users
         if (isNewUser) {

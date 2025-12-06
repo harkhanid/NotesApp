@@ -8,6 +8,7 @@ import TagIcon from "../../assets/images/icon-tag.svg?react";
 import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.js";
 import { selectTag, updateFilter } from "../../store/uiSlice";
 import { formatCreatedDate } from "../../utils/dateUtils.js";
+import { addToast } from "../../store/toastSlice.js";
 
 import "./InnerSideBar.css";
 
@@ -97,6 +98,8 @@ const InnerSideBar = () => {
     dispatch(updateFilter({filter:"MY_NOTES"}));
     dispatch(setCurrentNote({id: tempId}));
     dispatch(addAnoteAsync({ note: addNote.payload, tempId }));
+    dispatch(addToast({ type: "success", message: `New Note created` }));
+    
   }
   const setTag = (tag)=>{
       dispatch(selectTag({tag}));

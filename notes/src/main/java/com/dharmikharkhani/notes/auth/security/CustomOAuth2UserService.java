@@ -35,7 +35,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setEmail(email);
-                    newUser.setUsername(name);
+                    newUser.setName(name);
                     newUser.setRoles("ROLE_USER");
                     newUser.setProvider("GOOGLE");
                     return userRepo.save(newUser);

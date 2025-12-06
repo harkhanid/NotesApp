@@ -1,14 +1,14 @@
 import { API_DOMAIN } from "../constants/constants";
 const API_URL = API_DOMAIN + "/api/auth";
 
-const register = (username, email, password) => {
+const register = (name, email, password) => {
   return fetch(API_URL + "/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      username,
+      name,
       email,
       password,
     }),
