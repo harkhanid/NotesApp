@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -9,11 +9,13 @@ import ResetPage from './components/resetPage/ResetPage.jsx';
 import SettingsPage from './components/settings/SettingsPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ToastContainer from './components/common/ToastContainer.jsx';
+import StartupLoadingScreen from './components/common/StartupLoadingScreen.jsx';
 import EmailVerificationPage from './components/emailVerification/EmailVerificationPage.jsx';
 import ResendVerificationPage from './components/emailVerification/ResendVerificationPage.jsx';
 import ForgotPasswordPage from './components/forgotPassword/ForgotPasswordPage.jsx';
 import { checkAuth } from './store/authSlice.js';
 import { fetchPreferencesAsync } from './store/uiSlice.js';
+import { useBackendStartup } from './hooks/useBackendStartup.js';
 
 import './Fonts.css'
 import './App.css'
@@ -22,7 +24,10 @@ function App() {
   const dispatch = useDispatch();
   const currentFont = useSelector((state) => state.ui.font);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  // const { isStarting, checkStartup, setIsStarting } = useBackendStartup();
+  // const [initialCheckDone, setInitialCheckDone] = useState(false);
 
+  // Check auth status on mount
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
@@ -48,6 +53,11 @@ function App() {
     default:
       fontClass = "font-sourcecode";
   }
+
+  // // Show startup screen if backend is starting or initial check not done
+  // if (isStarting || !initialCheckDone) {
+  //   return <StartupLoadingScreen />;
+  // }
 
   return (
     <div className={`App ${fontClass}`}>

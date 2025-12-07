@@ -1,0 +1,94 @@
+.startup-loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--color-neutral-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.startup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.startup-logo {
+  width: 80px;
+  height: 80px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.startup-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-neutral-950);
+  margin: 0;
+}
+
+.startup-message {
+  text-align: center;
+  color: var(--color-neutral-600);
+}
+
+.startup-message p {
+  margin: 0.25rem 0;
+}
+
+.startup-message .preset-3 {
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  min-height: 1.5em;
+}
+
+.startup-subtitle {
+  color: var(--color-neutral-500);
+  font-size: 0.875rem;
+}
+
+.startup-spinner {
+  margin-top: 1rem;
+}
+
+.spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-neutral-300);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

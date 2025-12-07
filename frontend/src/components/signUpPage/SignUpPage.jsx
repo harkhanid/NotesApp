@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../../Service/authService";
 import { addToast } from "../../store/toastSlice";
 import { useDispatch } from "react-redux";
+import { API_DOMAIN } from "../../constants/constants";
 
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
@@ -83,6 +84,11 @@ const SignUpPage = () => {
     }
   };
 
+  const handleGoogleSignUp = () => {
+    // Redirect to Spring Security's OAuth2 authorization endpoint
+    window.location.href = `${API_DOMAIN}/oauth2/authorization/google`;
+  };
+
   if (success) {
     return (
       <div className="auth-page">
@@ -152,7 +158,7 @@ const SignUpPage = () => {
         </form>
         <hr />
         <p>Or log in with:</p>
-        <button className="google-login btn btn-secondary split full-width preset-3">
+        <button onClick={handleGoogleSignUp} type="button" className="google-login btn btn-secondary split full-width preset-3">
           <img src={googleIcon} alt="Google Icon" />
           <p>Google</p>
         </button>

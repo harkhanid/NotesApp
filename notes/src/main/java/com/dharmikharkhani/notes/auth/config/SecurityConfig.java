@@ -18,6 +18,7 @@ import com.dharmikharkhani.notes.auth.security.CustomOAuth2UserService;
 import com.dharmikharkhani.notes.auth.security.JwtAuthFilter;
 import com.dharmikharkhani.notes.auth.security.JwtUtil;
 import com.dharmikharkhani.notes.auth.security.OAuth2AuthenticationSuccessHandler;
+import com.dharmikharkhani.notes.auth.security.OAuth2AuthenticationFailureHandler;
 import com.dharmikharkhani.notes.auth.service.CustomUserDetailsService;
 
 
@@ -30,18 +31,21 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CustomOAuth2UserService customOauth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oauth2FailureHandler;
     private final CorsConfigurationSource corsConfigurationSource;
     private final StatelessAuthorizationRequestRepository statelessAuthorizationRequestRepository;
 
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil, 
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil,
     		CustomOAuth2UserService customOauth2UserService,
     		OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
+    		OAuth2AuthenticationFailureHandler oauth2FailureHandler,
             CorsConfigurationSource corsConfigurationSource, StatelessAuthorizationRequestRepository statelessAuthorizationRequestRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
 		this.customOauth2UserService = customOauth2UserService;
 		this.oauth2SuccessHandler = oauth2SuccessHandler;
+		this.oauth2FailureHandler = oauth2FailureHandler;
         this.corsConfigurationSource = corsConfigurationSource;
         this.statelessAuthorizationRequestRepository = statelessAuthorizationRequestRepository;
     }
@@ -82,6 +86,7 @@ public class SecurityConfig {
                 .authorizationEndpoint(a -> a.authorizationRequestRepository(statelessAuthorizationRequestRepository))
                 .userInfoEndpoint(u -> u.userService(customOauth2UserService))
                 .successHandler(oauth2SuccessHandler)
+                .failureHandler(oauth2FailureHandler)
             )
             // This is the key change to prevent redirects
             .exceptionHandling(e -> e

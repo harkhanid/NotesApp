@@ -1,33 +1,18 @@
-import { API_DOMAIN } from "../constants/constants.js";
-
-const API_URL = `${API_DOMAIN}/api`;
+import apiClient, { api, API_URL } from "../utils/apiClient.js";
 
 const getAllNotes = () => {
-  return fetch(`${API_URL}/notes`, {
-    method: "GET",
-    credentials: "include",
-  });
+  return api.get(`${API_URL}/notes`);
 };
 
 const getTags = () => {
-  return fetch(`${API_URL}/tags`, {
-    method: "GET",
-    credentials: "include",
-  });
+  return api.get(`${API_URL}/tags`);
 };
 
 const addNewNote = async (note) => {
-  const response = await fetch(`${API_URL}/notes`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title: note.title,
-      content: note.content,
-      tags: note.tags || [],
-    }),
+  const response = await api.post(`${API_URL}/notes`, {
+    title: note.title,
+    content: note.content,
+    tags: note.tags || [],
   });
 
   if (!response.ok) {
@@ -38,17 +23,10 @@ const addNewNote = async (note) => {
 };
 
 const updateNote = async (note) => {
-  const response = await fetch(`${API_URL}/notes/${note.id}`, {
-    method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title: note.title,
-      content: note.content,
-      tags: note.tags || [],
-    }),
+  const response = await api.put(`${API_URL}/notes/${note.id}`, {
+    title: note.title,
+    content: note.content,
+    tags: note.tags || [],
   });
 
   if (!response.ok) {
@@ -59,10 +37,7 @@ const updateNote = async (note) => {
 };
 
 const deleteNote = async (id) => {
-  const response = await fetch(`${API_URL}/notes/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  const response = await api.delete(`${API_URL}/notes/${id}`);
 
   if (!response.ok) {
     throw new Error(`Failed to delete note: ${response.status}`);
@@ -72,10 +47,7 @@ const deleteNote = async (id) => {
 };
 
 const searchNotes = async (keyword) => {
-  const response = await fetch(`${API_URL}/notes/search?keyword=${encodeURIComponent(keyword)}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await api.get(`${API_URL}/notes/search?keyword=${encodeURIComponent(keyword)}`);
 
   if (!response.ok) {
     throw new Error(`Failed to search notes: ${response.status}`);
@@ -85,14 +57,7 @@ const searchNotes = async (keyword) => {
 };
 
 const shareNote = async (noteId, emails) => {
-  const response = await fetch(`${API_URL}/notes/${noteId}/share`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ emails }),
-  });
+  const response = await api.post(`${API_URL}/notes/${noteId}/share`, { emails });
 
   if (!response.ok) {
     throw new Error(`Failed to share note: ${response.status}`);
@@ -102,10 +67,7 @@ const shareNote = async (noteId, emails) => {
 };
 
 const removeCollaborator = async (noteId, email) => {
-  const response = await fetch(`${API_URL}/notes/${noteId}/collaborators/${encodeURIComponent(email)}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  const response = await api.delete(`${API_URL}/notes/${noteId}/collaborators/${encodeURIComponent(email)}`);
 
   if (!response.ok) {
     throw new Error(`Failed to remove collaborator: ${response.status}`);
