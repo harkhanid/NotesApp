@@ -5,3 +5,15 @@
   color: var(--clr-neutral-600);
 }
 
+.forgot-password-link {
+  display: block;
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #4A90E2;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+

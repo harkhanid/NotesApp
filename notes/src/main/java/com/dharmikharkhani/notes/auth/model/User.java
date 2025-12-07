@@ -1,5 +1,6 @@
 package com.dharmikharkhani.notes.auth.model;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -37,6 +38,21 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String provider; // Local or GOOGLE
 
+	@Column(nullable = false)
+	private Boolean emailVerified = false;
+
+	@Column(nullable = true)
+	private String verificationToken;
+
+	@Column(nullable = true)
+	private LocalDateTime verificationTokenExpiry;
+
+	@Column(nullable = true)
+	private String passwordResetToken;
+
+	@Column(nullable = true)
+	private LocalDateTime passwordResetTokenExpiry;
+
 	public User(Long id, String name, String email, String password, String roles, String provider) {
 		super();
 		this.id = id;
@@ -45,6 +61,7 @@ public class User implements UserDetails {
 		this.password = password;
 		this.roles = roles;
 		this.provider = provider;
+		this.emailVerified = false;
 	}
 
 	public User() {
@@ -103,6 +120,46 @@ public class User implements UserDetails {
 
 	public void setProvider(String provider) {
 		this.provider = provider;
+	}
+
+	public Boolean getEmailVerified() {
+		return emailVerified;
+	}
+
+	public void setEmailVerified(Boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+
+	public String getVerificationToken() {
+		return verificationToken;
+	}
+
+	public void setVerificationToken(String verificationToken) {
+		this.verificationToken = verificationToken;
+	}
+
+	public LocalDateTime getVerificationTokenExpiry() {
+		return verificationTokenExpiry;
+	}
+
+	public void setVerificationTokenExpiry(LocalDateTime verificationTokenExpiry) {
+		this.verificationTokenExpiry = verificationTokenExpiry;
+	}
+
+	public String getPasswordResetToken() {
+		return passwordResetToken;
+	}
+
+	public void setPasswordResetToken(String passwordResetToken) {
+		this.passwordResetToken = passwordResetToken;
+	}
+
+	public LocalDateTime getPasswordResetTokenExpiry() {
+		return passwordResetTokenExpiry;
+	}
+
+	public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
+		this.passwordResetTokenExpiry = passwordResetTokenExpiry;
 	}
 
 	@Override

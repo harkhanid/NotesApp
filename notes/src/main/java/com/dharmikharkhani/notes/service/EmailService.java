@@ -1,0 +1,143 @@
+package com.dharmikharkhani.notes.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+
+import com.dharmikharkhani.notes.auth.model.User;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    public void sendVerificationEmail(User user, String token) throws MessagingException {
+        String verificationUrl = frontendUrl + "/verify-email?token=" + token;
+
+        String subject = "Verify Your NotesApp Account";
+        String htmlContent = buildVerificationEmailTemplate(user.getName(), verificationUrl);
+
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
+    }
+
+    public void sendPasswordResetEmail(User user, String token) throws MessagingException {
+        String resetUrl = frontendUrl + "/resetpassword?token=" + token;
+
+        String subject = "Reset Your NotesApp Password";
+        String htmlContent = buildPasswordResetEmailTemplate(user.getName(), resetUrl);
+
+        sendHtmlEmail(user.getEmail(), subject, htmlContent);
+    }
+
+    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+    }
+
+    private String buildVerificationEmailTemplate(String userName, String verificationUrl) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }" +
+                "        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }" +
+                "        .header { background-color: #4A90E2; padding: 30px 20px; text-align: center; color: #ffffff; }" +
+                "        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }" +
+                "        .content { background-color: #ffffff; padding: 30px; }" +
+                "        .button { display: inline-block; padding: 12px 30px; background-color: #4A90E2; color: #ffffff !important;border:noe text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
+                "        .footer { text-align: center; padding: 20px; background-color: #f9f9f9; font-size: 12px; color: #999; }" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"container\">" +
+                "        <div class=\"header\">" +
+                "            <h1>NotesApp</h1>" +
+                "        </div>" +
+                "        <div class=\"content\">" +
+                "            <h2 style=\"color: #4A90E2; margin-top: 0;\">Welcome to NotesApp!</h2>" +
+                "            <p>Hi " + userName + ",</p>" +
+                "            <p>Thank you for signing up for NotesApp! To complete your registration, please verify your email address by clicking the button below:</p>" +
+                "            <div style=\"text-align: center;\">" +
+                "                <a href=\"" + verificationUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Verify Email Address</a>" +
+                "            </div>" +
+                "            <p>Or copy and paste this link into your browser:</p>" +
+                "            <p style=\"word-break: break-all; color: #4A90E2; background-color: #f0f8ff; padding: 10px; border-radius: 4px; font-size: 14px;\">" + verificationUrl + "</p>" +
+                "            <p style=\"background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 15px 0;\"><strong>⏰ This link will expire in 1 hour.</strong></p>" +
+                "            <p>If you didn't create an account with NotesApp, you can safely ignore this email.</p>" +
+                "            <p>Best regards,<br>The NotesApp Team</p>" +
+                "        </div>" +
+                "        <div class=\"footer\">" +
+                "            <p>&copy; 2024 NotesApp. All rights reserved.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    private String buildPasswordResetEmailTemplate(String userName, String resetUrl) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }" +
+                "        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }" +
+                "        .header { background-color: #E94B3C; padding: 30px 20px; text-align: center; color: #ffffff; }" +
+                "        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }" +
+                "        .content { background-color: #ffffff; padding: 30px; }" +
+                "        .button { display: inline-block; padding: 12px 30px;border:none; background-color: #E94B3C; color: #ffffff !important; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
+                "        .footer { text-align: center; padding: 20px; background-color: #f9f9f9; font-size: 12px; color: #999; }" +
+                "        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 10px; margin: 15px 0; }" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"container\">" +
+                "        <div class=\"header\">" +
+                "            <h1>NotesApp</h1>" +
+                "        </div>" +
+                "        <div class=\"content\">" +
+                "            <h2 style=\"color: #E94B3C; margin-top: 0;\">Password Reset Request</h2>" +
+                "            <p>Hi " + userName + ",</p>" +
+                "            <p>We received a request to reset your NotesApp password. Click the button below to create a new password:</p>" +
+                "            <div style=\"text-align: center;\">" +
+                "                <a href=\"" + resetUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Reset Password</a>" +
+                "            </div>" +
+                "            <p>Or copy and paste this link into your browser:</p>" +
+                "            <p style=\"word-break: break-all; color: #E94B3C; background-color: #ffebee; padding: 10px; border-radius: 4px; font-size: 14px;\">" + resetUrl + "</p>" +
+                "            <div class=\"warning\">" +
+                "                <p style=\"margin: 0;\"><strong>⏰ This link will expire in 1 hour.</strong></p>" +
+                "            </div>" +
+                "            <p>If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>" +
+                "            <p>For security reasons, we recommend choosing a strong, unique password.</p>" +
+                "            <p>Best regards,<br>The NotesApp Team</p>" +
+                "        </div>" +
+                "        <div class=\"footer\">" +
+                "            <p>&copy; 2024 NotesApp. All rights reserved.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
+    }
+}
