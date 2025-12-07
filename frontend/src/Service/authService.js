@@ -1,6 +1,9 @@
 import { API_DOMAIN } from "../constants/constants";
+import apiClient, { api } from "../utils/apiClient.js";
+
 const API_URL = API_DOMAIN + "/api/auth";
 
+// Public endpoints - don't use apiClient (no 401 handling needed)
 const register = (name, email, password) => {
   return fetch(API_URL + "/register", {
     method: "POST",
@@ -29,18 +32,14 @@ const login = (email, password) => {
   });
 };
 
+// Authenticated endpoints - use apiClient for 401 handling
 const logout = () => {
   // Assuming the backend has a /logout endpoint that clears the cookie
-  return fetch(API_URL + "/logout", {
-    method: "POST",
-    credentials: "include",
-  });
+  return api.post(API_URL + "/logout");
 };
 
 const checkAuthStatus = () => {
-  return fetch(API_URL + "/profile", {
-    credentials: "include", // This is crucial for sending the HttpOnly cookie
-  });
+  return api.get(API_URL + "/profile");
 };
 
 /**
@@ -49,9 +48,7 @@ const checkAuthStatus = () => {
  */
 const getWebSocketToken = async () => {
   try {
-    const response = await fetch(API_URL + "/websocket-token", {
-      credentials: "include",
-    });
+    const response = await api.get(API_URL + "/websocket-token");
 
     if (!response.ok) {
       throw new Error("Failed to fetch WebSocket token");
@@ -71,9 +68,7 @@ const getWebSocketToken = async () => {
  */
 const checkEmailExists = async (email) => {
   try {
-    const response = await fetch(API_URL + `/check-email?email=${encodeURIComponent(email)}`, {
-      credentials: "include",
-    });
+    const response = await api.get(API_URL + `/check-email?email=${encodeURIComponent(email)}`);
 
     if (!response.ok) {
       throw new Error("Failed to check email");

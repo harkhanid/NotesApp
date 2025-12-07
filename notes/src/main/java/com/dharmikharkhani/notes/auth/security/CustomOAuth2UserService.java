@@ -30,16 +30,27 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
             throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
         }
 
-        // Find or create local user
-        User user = userRepo.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setName(name);
-                    newUser.setRoles("ROLE_USER");
-                    newUser.setProvider("GOOGLE");
-                    return userRepo.save(newUser);
-                });
+        // Check if user exists with this email
+        User user = userRepo.findByEmail(email).orElse(null);
+
+        if (user != null) {
+            // User exists - check if it's a regular (LOCAL) account
+            if ("LOCAL".equals(user.getProvider())) {
+                throw new OAuth2AuthenticationException(
+                    "An account with this email already exists. Please sign in with your email and password."
+                );
+            }
+            // If it's already a GOOGLE account, continue with existing user
+        } else {
+            // No existing user - create new OAuth user
+            user = new User();
+            user.setEmail(email);
+            user.setName(name);
+            user.setRoles("ROLE_USER");
+            user.setProvider("GOOGLE");
+            user.setEmailVerified(true); // OAuth providers verify emails
+            user = userRepo.save(user);
+        }
 
         return new org.springframework.security.oauth2.core.user.DefaultOAuth2User(
                 user.getAuthorities(),

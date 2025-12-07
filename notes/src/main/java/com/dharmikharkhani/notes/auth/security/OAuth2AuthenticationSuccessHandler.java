@@ -42,23 +42,22 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = (String) oauthUser.getAttribute("email");
 
-        // Check if user already exists
-        boolean isNewUser = !userRepo.existsByEmail(email);
+        // User already exists (created in CustomOAuth2UserService)
+        // Check if this is a new user for welcome note
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User should exist after OAuth authentication"));
 
-        User user = userRepo.findByEmail(email).orElseGet(()-> {
-            String name = (String) oauthUser.getAttribute("name");
-            if (name == null) {
-                name = (String) oauthUser.getAttribute("given_name");
-            }
-            return userRepo.save(new User(null, name, email, "","ROLE_user","GOOGLE"));
-        });
-
-        // Create welcome note for new OAuth2 users
-        if (isNewUser) {
+        // Create welcome note only if user was just created (no notes exist)
+        // Note: We can't use a simple boolean here since user is created in CustomOAuth2UserService
+        // Instead, check if user has any notes
+        if (!user.getEmailVerified()) {
+            // New OAuth user - set email as verified and create welcome note
+            user.setEmailVerified(true);
+            userRepo.save(user);
             noteService.createWelcomeNote(user);
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), "GOOGLE");
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), user.getProvider());
 
         // Set HttpOnly cookie with environment-based security settings
         Cookie cookie = new Cookie("token", token);
@@ -67,6 +66,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         cookie.setPath("/");
         cookie.setMaxAge((int)(3600)); // seconds
         response.addCookie(cookie);
-        response.sendRedirect(frontendUrl + "/home");
+        response.sendRedirect(frontendUrl + "/dashboard");
         }
 }

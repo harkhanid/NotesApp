@@ -1,11 +1,11 @@
 import { API_DOMAIN } from "../constants/constants";
+import { api } from "../utils/apiClient.js";
+
 const API_URL = API_DOMAIN + "/api/user/preferences";
 
 const getPreferences = async () => {
   try {
-    const response = await fetch(API_URL, {
-      credentials: "include",
-    });
+    const response = await api.get(API_URL);
 
     if (!response.ok) {
       throw new Error("Failed to fetch preferences");
@@ -20,14 +20,7 @@ const getPreferences = async () => {
 
 const updatePreferences = async (preferences) => {
   try {
-    const response = await fetch(API_URL, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(preferences),
-    });
+    const response = await api.put(API_URL, preferences);
 
     if (!response.ok) {
       throw new Error("Failed to update preferences");

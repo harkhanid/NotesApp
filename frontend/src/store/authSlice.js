@@ -60,7 +60,16 @@ const initialState = {
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    // Synchronous logout - clears auth state without calling API
+    // Used by apiClient when JWT expires to prevent infinite loops
+    clearAuth: (state) => {
+      state.isAuthenticated = false;
+      state.user = null;
+      state.loading = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Handle checkAuth
@@ -102,4 +111,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { clearAuth } = authSlice.actions;
 export default authSlice.reducer;

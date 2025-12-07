@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../store/authSlice";
 import { addToast } from "../../store/toastSlice";
+import { API_DOMAIN } from "../../constants/constants";
 
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
@@ -12,6 +13,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showVerificationError, setShowVerificationError] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
@@ -29,9 +31,22 @@ const LoginPage = () => {
     }
   }, [error]);
 
+  // Check for OAuth error in URL params
+  useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      dispatch(addToast({ message: decodeURIComponent(oauthError), type: "error" }));
+    }
+  }, [searchParams, dispatch]);
+
   const handleLogin = (e) => {
     e.preventDefault();
     dispatch(login({ email, password }));
+  };
+
+  const handleGoogleLogin = () => {
+    // Redirect to Spring Security's OAuth2 authorization endpoint
+    window.location.href = `${API_DOMAIN}/oauth2/authorization/google`;
   };
 
   return (
@@ -61,7 +76,7 @@ const LoginPage = () => {
         </form>
         <hr />
         <p className="preset-5 center">Or log in with:</p>
-        <button className="google-login btn btn-secondary split full-width preset-3">
+        <button onClick={handleGoogleLogin} type="button" className="google-login btn btn-secondary split full-width preset-3">
           <img src={googleIcon} alt="Google Icon" />
           <p>Google</p>
         </button>
