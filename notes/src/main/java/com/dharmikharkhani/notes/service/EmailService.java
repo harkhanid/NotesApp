@@ -65,7 +65,7 @@ public class EmailService {
                 "        .header { background-color: #4A90E2; padding: 30px 20px; text-align: center; color: #ffffff; }" +
                 "        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }" +
                 "        .content { background-color: #ffffff; padding: 30px; }" +
-                "        .button { display: inline-block; padding: 12px 30px; background-color: #4A90E2; color: #ffffff !important;border:none; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
+                "        .button { display: inline-block; padding: 12px 30px; background-color: #4A90E2; color: #ffffff !important;border:noe text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
                 "        .footer { text-align: center; padding: 20px; background-color: #f9f9f9; font-size: 12px; color: #999; }" +
                 "    </style>" +
                 "</head>" +
@@ -79,7 +79,7 @@ public class EmailService {
                 "            <p>Hi " + userName + ",</p>" +
                 "            <p>Thank you for signing up for NotesApp! To complete your registration, please verify your email address by clicking the button below:</p>" +
                 "            <div style=\"text-align: center;\">" +
-                "                <button href=\"" + verificationUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Verify Email Address</button>" +
+                "                <a href=\"" + verificationUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Verify Email Address</a>" +
                 "            </div>" +
                 "            <p>Or copy and paste this link into your browser:</p>" +
                 "            <p style=\"word-break: break-all; color: #4A90E2; background-color: #f0f8ff; padding: 10px; border-radius: 4px; font-size: 14px;\">" + verificationUrl + "</p>" +
@@ -122,7 +122,7 @@ public class EmailService {
                 "            <p>Hi " + userName + ",</p>" +
                 "            <p>We received a request to reset your NotesApp password. Click the button below to create a new password:</p>" +
                 "            <div style=\"text-align: center;\">" +
-                "                <button href=\"" + resetUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Reset Password</button>" +
+                "                <a href=\"" + resetUrl + "\" class=\"button\" style=\"color: #ffffff; text-decoration: none;\">Reset Password</a>" +
                 "            </div>" +
                 "            <p>Or copy and paste this link into your browser:</p>" +
                 "            <p style=\"word-break: break-all; color: #E94B3C; background-color: #ffebee; padding: 10px; border-radius: 4px; font-size: 14px;\">" + resetUrl + "</p>" +

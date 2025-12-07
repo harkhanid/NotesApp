@@ -126,6 +126,18 @@ const forgotPassword = (email) => {
 };
 
 /**
+ * Validate password reset token
+ */
+const validateResetToken = (token) => {
+  return fetch(API_URL + `/validate-reset-token?token=${encodeURIComponent(token)}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+/**
  * Reset password with token
  */
 const resetPassword = (token, password) => {
@@ -148,6 +160,7 @@ const authService = {
   verifyEmail,
   resendVerification,
   forgotPassword,
+  validateResetToken,
   resetPassword,
 };
 

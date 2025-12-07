@@ -291,6 +291,27 @@ public class AuthController {
         }
 
         /**
+         * Validate password reset token
+         */
+        @GetMapping("/validate-reset-token")
+        public ResponseEntity<?> validateResetToken(@RequestParam String token) {
+            if (token == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Token required", "valid", false));
+            }
+
+            User user = userRepo.findByPasswordResetToken(token).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(400).body(Map.of("error", "Invalid reset token", "valid", false));
+            }
+
+            if (tokenService.isTokenExpired(user.getPasswordResetTokenExpiry())) {
+                return ResponseEntity.status(400).body(Map.of("error", "Reset token has expired", "valid", false));
+            }
+
+            return ResponseEntity.ok(Map.of("msg", "Token is valid", "valid", true));
+        }
+
+        /**
          * Reset password with token
          */
         @PostMapping("/reset-password")

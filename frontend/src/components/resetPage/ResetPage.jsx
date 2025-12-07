@@ -13,6 +13,8 @@ const ResetPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
+  const [validatingToken, setValidatingToken] = useState(true);
+  const [tokenValid, setTokenValid] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState({
     minLength: false,
     hasUpperCase: false,
@@ -25,10 +27,33 @@ const ResetPage = () => {
     const tokenParam = searchParams.get("token");
     if (!tokenParam) {
       setError("No reset token provided");
-    } else {
-      setToken(tokenParam);
+      setValidatingToken(false);
+      return;
     }
-  }, [searchParams]);
+
+    setToken(tokenParam);
+
+    // Validate token on mount
+    authService.validateResetToken(tokenParam)
+      .then(async (response) => {
+        const data = await response.json();
+        if (response.ok && data.valid) {
+          setTokenValid(true);
+        } else {
+          const errorMessage = data.error || "Reset token is invalid or expired";
+          dispatch(addToast({ message: errorMessage, type: "error" }));
+          navigate("/login");
+        }
+      })
+      .catch((err) => {
+        console.error("Token validation error:", err);
+        dispatch(addToast({ message: "Failed to validate reset token", type: "error" }));
+        navigate("/login");
+      })
+      .finally(() => {
+        setValidatingToken(false);
+      });
+  }, [searchParams, navigate, dispatch]);
 
   const validatePassword = (pwd) => {
     const errors = {
@@ -90,20 +115,21 @@ const ResetPage = () => {
     }
   };
 
-  if (!token) {
+  // Show loading state while validating token or if token is invalid (will redirect)
+  if (validatingToken || !tokenValid) {
     return (
       <div className="auth-page">
         <div className="card flow-content">
           <img src={logo} className="logo" alt="Logo" />
           <div className="card-text">
-            <p className="title preset-1">Invalid Reset Link</p>
-            <p className="preset-5 error-message">
-              This password reset link is invalid or has expired.
-            </p>
+            <p className="title preset-1">Validating Reset Link</p>
           </div>
-          <Link to="/forgot-password" className="btn btn-primary full-width preset-3">
-            Request New Reset Link
-          </Link>
+          <div className="verification-content flow-content">
+            <div className="verifying-state">
+              <div className="spinner"></div>
+              <p className="preset-4">Verifying your reset token...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
