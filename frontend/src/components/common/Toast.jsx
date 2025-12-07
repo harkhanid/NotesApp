@@ -13,7 +13,7 @@ const Toast = ({ id, type, message }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // dispatch(removeToast({ id }));
+      dispatch(removeToast({ id }));
     }, 3500); 
 
     return () => clearTimeout(timer);

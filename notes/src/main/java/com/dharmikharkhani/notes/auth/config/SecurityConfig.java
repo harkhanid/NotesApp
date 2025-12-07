@@ -75,7 +75,7 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/login","/api/auth/register", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
+                    .requestMatchers("/api/auth/login","/api/auth/register", "/api/auth/verify-email", "/api/auth/resend-verification", "/api/auth/forgot-password", "/api/auth/reset-password", "/login/oauth2/**", "/oauth2/**", "/oauth2/authorization/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

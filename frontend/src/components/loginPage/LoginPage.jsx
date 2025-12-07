@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../store/authSlice";
+import { addToast } from "../../store/toastSlice";
+
 import logo from "../../assets/images/logo.svg";
 import googleIcon from "../../assets/images/icon-google.svg";
 import "./LoginPage.css";
@@ -9,6 +11,7 @@ import "./LoginPage.css";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showVerificationError, setShowVerificationError] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
@@ -18,6 +21,13 @@ const LoginPage = () => {
       navigate("/dashboard");
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    // Check if error is email not verified
+    if (error && typeof error === 'string' && error.includes('email not verified')) {
+      dispatch(addToast({ message: "Your email is not verified!", type: "error" }));
+    }
+  }, [error]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -45,6 +55,9 @@ const LoginPage = () => {
           <button type="submit" className="btn btn-primary full-width preset-3" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
+          <Link to="/forgot-password" className="preset-5 center forgot-password-link">
+            Forgot password?
+          </Link>
         </form>
         <hr />
         <p className="preset-5 center">Or log in with:</p>

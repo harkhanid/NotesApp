@@ -9,6 +9,9 @@ import ResetPage from './components/resetPage/ResetPage.jsx';
 import SettingsPage from './components/settings/SettingsPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ToastContainer from './components/common/ToastContainer.jsx';
+import EmailVerificationPage from './components/emailVerification/EmailVerificationPage.jsx';
+import ResendVerificationPage from './components/emailVerification/ResendVerificationPage.jsx';
+import ForgotPasswordPage from './components/forgotPassword/ForgotPasswordPage.jsx';
 import { checkAuth } from './store/authSlice.js';
 import { fetchPreferencesAsync } from './store/uiSlice.js';
 
@@ -53,6 +56,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/resetpassword" element={<ResetPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/resend-verification" element={<ResendVerificationPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<SettingsPage />} />

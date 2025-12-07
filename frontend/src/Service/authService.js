@@ -87,6 +87,57 @@ const checkEmailExists = async (email) => {
   }
 };
 
+/**
+ * Verify email with token
+ */
+const verifyEmail = (token) => {
+  return fetch(API_URL + `/verify-email?token=${encodeURIComponent(token)}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+/**
+ * Resend verification email
+ */
+const resendVerification = (email) => {
+  return fetch(API_URL + "/resend-verification", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+};
+
+/**
+ * Request password reset
+ */
+const forgotPassword = (email) => {
+  return fetch(API_URL + "/forgot-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+};
+
+/**
+ * Reset password with token
+ */
+const resetPassword = (token, password) => {
+  return fetch(API_URL + "/reset-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, password }),
+  });
+};
+
 const authService = {
   register,
   login,
@@ -94,6 +145,10 @@ const authService = {
   checkAuthStatus,
   getWebSocketToken,
   checkEmailExists,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
 };
 
 export default authService;
