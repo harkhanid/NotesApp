@@ -24,13 +24,34 @@ function App() {
   const dispatch = useDispatch();
   const currentFont = useSelector((state) => state.ui.font);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  // const { isStarting, checkStartup, setIsStarting } = useBackendStartup();
-  // const [initialCheckDone, setInitialCheckDone] = useState(false);
+  const { isStarting, checkStartup, setIsStarting } = useBackendStartup();
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
-  // Check auth status on mount
+  // Check if backend is starting up on mount
   useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
+    const checkBackendAndAuth = async () => {
+      const backendStarting = await checkStartup();
+
+      if (backendStarting) {
+        // Poll every 3 seconds until backend is ready
+        const pollInterval = setInterval(async () => {
+          const stillStarting = await checkStartup();
+          if (!stillStarting) {
+            clearInterval(pollInterval);
+            // Backend is ready, now check auth
+            dispatch(checkAuth());
+            setInitialCheckDone(true);
+          }
+        }, 3000);
+      } else {
+        // Backend is already running, check auth immediately
+        dispatch(checkAuth());
+        setInitialCheckDone(true);
+      }
+    };
+
+    checkBackendAndAuth();
+  }, [dispatch, checkStartup, setIsStarting]);
 
   // Fetch preferences when user is authenticated
   useEffect(() => {
@@ -54,10 +75,10 @@ function App() {
       fontClass = "font-sourcecode";
   }
 
-  // // Show startup screen if backend is starting or initial check not done
-  // if (isStarting || !initialCheckDone) {
-  //   return <StartupLoadingScreen />;
-  // }
+  // Show startup screen if backend is starting or initial check not done
+  if (isStarting || !initialCheckDone) {
+    return <StartupLoadingScreen />;
+  }
 
   return (
     <div className={`App ${fontClass}`}>

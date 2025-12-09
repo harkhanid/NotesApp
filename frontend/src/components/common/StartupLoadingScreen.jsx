@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './StartupLoadingScreen.css';
 import logo from '../../assets/images/logo.svg';
 
@@ -19,9 +19,12 @@ const StartupLoadingScreen = () => {
         <img src={logo} alt="Notes Logo" className="startup-logo" />
         <h1 className="startup-title">Notes</h1>
         <div className="startup-message">
-          <p className="preset-3">Starting up the server{dots}</p>
+          <p className="preset-3">Waking up the server{dots}</p>
           <p className="preset-5 startup-subtitle">
-            This may take a minute on first load
+            Free tier servers sleep after inactivity
+          </p>
+          <p className="preset-5 startup-subtitle" style={{ marginTop: '0.5rem', opacity: 0.7 }}>
+            This will take ~60 seconds on first visit
           </p>
         </div>
         <div className="startup-spinner">
