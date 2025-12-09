@@ -10,22 +10,33 @@ export const useBackendStartup = () => {
 
   const checkStartup = async () => {
     try {
-      // Ping a lightweight endpoint to check backend status
+      // Try to ping the backend with a timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
       const response = await fetch(`${API_DOMAIN}/actuator/health`, {
         method: 'GET',
-        // Don't include credentials for health check
+        signal: controller.signal,
+        cache: 'no-store', // Don't cache the health check
       });
 
-      // If we get 503 or network error, backend is likely starting
-      if (response.status === 503) {
-        setIsStarting(true);
-        return true;
-      }
+      clearTimeout(timeoutId);
 
+      // 503 = Service starting up
+      // 401 = Service is up but requires auth (that's fine!)
+      // 200 = Service is up
+      // Any response means backend is running
       setIsStarting(false);
       return false;
     } catch (error) {
-      // Network error - backend might be starting
+      // AbortError = timeout
+      // TypeError = network error (backend sleeping)
+      // Either way, backend is starting
+      if (error.name === 'AbortError') {
+        console.log('Backend health check timeout - server is starting...');
+      } else {
+        console.log('Backend connection failed - server is starting...');
+      }
       setIsStarting(true);
       return true;
     }
