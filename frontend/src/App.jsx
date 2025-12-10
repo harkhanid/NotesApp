@@ -77,7 +77,11 @@ function App() {
 
   // Show startup screen if backend is starting or initial check not done
   if (isStarting || !initialCheckDone) {
-    return <StartupLoadingScreen />;
+    return (
+      <div className={`App ${fontClass}`}>
+        <StartupLoadingScreen />
+      </div>
+    )
   }
 
   return (
