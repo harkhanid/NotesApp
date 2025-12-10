@@ -15,9 +15,9 @@ import com.dharmikharkhani.notes.auth.repository.UserRepository;
 import com.dharmikharkhani.notes.service.NoteService;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler{
