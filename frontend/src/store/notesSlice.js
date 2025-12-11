@@ -88,7 +88,6 @@ export const searchNotesAsync = createAsyncThunk(
   }
 );
 
-
 export const notesSlice = createSlice({
   name: "notes",
   initialState: initialState,
@@ -164,8 +163,9 @@ export const notesSlice = createSlice({
       })
       // Handle updateANoteAsync - rollback on error
       .addCase(updateANoteAsync.fulfilled, (state, action) => {
-        const updatedNote = action.payload;
-        state.byId[updatedNote.id] = updatedNote;
+        //Not needed as we optimistically update
+        // const updatedNote = action.payload;
+        // state.byId[updatedNote.id] = updatedNote;
       })
       .addCase(updateANoteAsync.rejected, (state, action) => {
         const { previousNote } = action.payload;

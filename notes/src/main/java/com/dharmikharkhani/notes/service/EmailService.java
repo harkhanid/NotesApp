@@ -65,7 +65,7 @@ public class EmailService {
                 "        .header { background-color: #4A90E2; padding: 30px 20px; text-align: center; color: #ffffff; }" +
                 "        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }" +
                 "        .content { background-color: #ffffff; padding: 30px; }" +
-                "        .button { display: inline-block; padding: 12px 30px; background-color: #4A90E2; color: #ffffff !important;border:noe text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
+                "        .button { display: inline-block; padding: 12px 30px; background-color: #4A90E2; color: #ffffff !important; border: none; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
                 "        .footer { text-align: center; padding: 20px; background-color: #f9f9f9; font-size: 12px; color: #999; }" +
                 "    </style>" +
                 "</head>" +
@@ -107,7 +107,7 @@ public class EmailService {
                 "        .header { background-color: #E94B3C; padding: 30px 20px; text-align: center; color: #ffffff; }" +
                 "        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }" +
                 "        .content { background-color: #ffffff; padding: 30px; }" +
-                "        .button { display: inline-block; padding: 12px 30px;border:none; background-color: #E94B3C; color: #ffffff !important; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
+                "        .button { display: inline-block; padding: 12px 30px; border: none; background-color: #E94B3C; color: #ffffff !important; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }" +
                 "        .footer { text-align: center; padding: 20px; background-color: #f9f9f9; font-size: 12px; color: #999; }" +
                 "        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 10px; margin: 15px 0; }" +
                 "    </style>" +
