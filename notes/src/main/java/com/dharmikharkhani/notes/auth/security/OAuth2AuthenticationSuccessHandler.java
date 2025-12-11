@@ -42,70 +42,49 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        try {
-            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-            String email = (String) oauthUser.getAttribute("email");
+        OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+        String email = (String) oauthUser.getAttribute("email");
 
-            logger.info("OAuth success handler - processing user: {}", email);
-
-            // Find or create user
-            User user = userRepo.findByEmail(email).orElse(null);
-
-            if (user == null) {
-                // User doesn't exist - create new OAuth user
-                logger.warn("User not found in database, creating new user for email: {}", email);
-                String name = (String) oauthUser.getAttribute("name");
-                if (name == null) {
-                    name = (String) oauthUser.getAttribute("given_name");
-                }
-
-                user = new User();
-                user.setEmail(email);
-                user.setName(name != null ? name : email);
-                user.setRoles("ROLE_USER");
-                user.setProvider("GOOGLE");
-                user.setEmailVerified(false); // Will be set to true below
-                user = userRepo.save(user);
-                logger.info("New OAuth user created with ID: {}", user.getId());
-            } else {
-                logger.info("User found: {}, emailVerified: {}", user.getEmail(), user.getEmailVerified());
+        // User should already exist (created by CustomOAuth2UserService)
+        // If not, this is a fallback - but ideally CustomOAuth2UserService should handle this
+        User user = userRepo.findByEmail(email).orElseGet(() -> {
+            String name = (String) oauthUser.getAttribute("name");
+            if (name == null) {
+                name = (String) oauthUser.getAttribute("given_name");
             }
 
-            // Create welcome note only if user was just created (no notes exist)
-            // Note: We can't use a simple boolean here since user is created in CustomOAuth2UserService
-            // Instead, check if user has any notes
-            if (!user.getEmailVerified()) {
-                // New OAuth user - set email as verified and create welcome note
-                user.setEmailVerified(true);
-                userRepo.save(user);
-                logger.info("Marked user as email verified");
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(name != null ? name : email);
+            newUser.setRoles("ROLE_USER");
+            newUser.setProvider("GOOGLE");
+            newUser.setEmailVerified(true);
 
-                // Try to create welcome note, but don't fail the entire OAuth flow if it fails
-                try {
-                    noteService.createWelcomeNote(user);
-                    logger.info("Welcome note created successfully");
-                } catch (Exception e) {
-                    // Log the error but continue with authentication
-                    logger.error("Failed to create welcome note for OAuth user: {}", e.getMessage(), e);
-                }
+            User savedUser = userRepo.save(newUser);
+
+            // Create welcome note for new users
+            try {
+                noteService.createWelcomeNote(savedUser);
+            } catch (Exception e) {
+                // Log error but don't fail OAuth flow
+                logger.error("Failed to create welcome note: {}", e.getMessage());
             }
 
-            logger.info("Generating JWT token for user: {}", email);
-            String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), user.getProvider());
+            return savedUser;
+        });
 
-            // Set HttpOnly cookie with environment-based security settings
-            Cookie cookie = new Cookie("token", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(cookieSecure);
-            cookie.setPath("/");
-            cookie.setMaxAge((int)(3600)); // seconds
-            response.addCookie(cookie);
+        // Generate JWT token
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), user.getProvider());
 
-            logger.info("Redirecting to: {}/dashboard", frontendUrl);
-            response.sendRedirect(frontendUrl + "/dashboard");
-        } catch (Exception e) {
-            logger.error("OAuth authentication success handler failed: {}", e.getMessage(), e);
-            throw e;
-        }
+        // Set HttpOnly cookie with environment-based security settings
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(cookieSecure);
+        cookie.setPath("/");
+        cookie.setMaxAge((int)(3600));
+        response.addCookie(cookie);
+
+        // Redirect to dashboard
+        response.sendRedirect(frontendUrl + "/dashboard");
     }
 }

@@ -19,6 +19,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
 
     public CustomOAuth2UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
+        logger.info("========================================");
+        logger.info("CustomOAuth2UserService bean created!");
+        logger.info("========================================");
     }
 
     @Override

@@ -29,7 +29,12 @@ public class CustomUserDetailsService implements UserDetailsService{
 		                    .map(String::trim)
 		                    .map(SimpleGrantedAuthority::new)
 		                    .collect(Collectors.toList());
-		return new org.springframework.security.core.userdetails.User(u.getEmail(), u.getPassword(), authorities);
+
+		// OAuth users (GOOGLE) don't have passwords, so use a placeholder
+		// They authenticate via OAuth flow, not via password
+		String password = (u.getPassword() != null) ? u.getPassword() : "OAUTH_USER_NO_PASSWORD";
+
+		return new org.springframework.security.core.userdetails.User(u.getEmail(), password, authorities);
 	}
     
 }
