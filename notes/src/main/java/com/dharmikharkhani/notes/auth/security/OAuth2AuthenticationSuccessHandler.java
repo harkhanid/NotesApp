@@ -48,12 +48,28 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             logger.info("OAuth success handler - processing user: {}", email);
 
-            // User already exists (created in CustomOAuth2UserService)
-            // Check if this is a new user for welcome note
-            User user = userRepo.findByEmail(email)
-                    .orElseThrow(() -> new IllegalStateException("User should exist after OAuth authentication"));
+            // Find or create user
+            User user = userRepo.findByEmail(email).orElse(null);
 
-            logger.info("User found: {}, emailVerified: {}", user.getEmail(), user.getEmailVerified());
+            if (user == null) {
+                // User doesn't exist - create new OAuth user
+                logger.warn("User not found in database, creating new user for email: {}", email);
+                String name = (String) oauthUser.getAttribute("name");
+                if (name == null) {
+                    name = (String) oauthUser.getAttribute("given_name");
+                }
+
+                user = new User();
+                user.setEmail(email);
+                user.setName(name != null ? name : email);
+                user.setRoles("ROLE_USER");
+                user.setProvider("GOOGLE");
+                user.setEmailVerified(false); // Will be set to true below
+                user = userRepo.save(user);
+                logger.info("New OAuth user created with ID: {}", user.getId());
+            } else {
+                logger.info("User found: {}, emailVerified: {}", user.getEmail(), user.getEmailVerified());
+            }
 
             // Create welcome note only if user was just created (no notes exist)
             // Note: We can't use a simple boolean here since user is created in CustomOAuth2UserService
