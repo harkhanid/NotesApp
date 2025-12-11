@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -15,7 +17,6 @@ import com.dharmikharkhani.notes.auth.repository.UserRepository;
 import com.dharmikharkhani.notes.service.NoteService;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -32,6 +33,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
 	 @Value("${app.cookie.secure}")
 	 private boolean cookieSecure;
+
+	 @Value("${app.cookie.same-site}")
+	 private String cookieSameSite;
 
 	 public OAuth2AuthenticationSuccessHandler(JwtUtil jwtUtil, UserRepository userRepo, NoteService noteService) {
         this.jwtUtil = jwtUtil;
@@ -77,12 +81,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String token = jwtUtil.generateToken(user.getEmail(), user.getRoles(), user.getProvider());
 
         // Set HttpOnly cookie with environment-based security settings
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
-        cookie.setMaxAge((int)(3600));
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .path("/")
+                .httpOnly(true)
+                .sameSite(cookieSameSite)
+                .secure(cookieSecure)
+                .maxAge(3600)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // Redirect to dashboard
         response.sendRedirect(frontendUrl + "/dashboard");
