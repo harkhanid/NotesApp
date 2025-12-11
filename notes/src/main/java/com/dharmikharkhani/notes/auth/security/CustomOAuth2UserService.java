@@ -11,7 +11,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService{
@@ -23,8 +22,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
     }
 
     @Override
-    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        logger.info("CustomOAuth2UserService.loadUser() called - starting OAuth user loading");
+
         OAuth2User oauthUser = super.loadUser(userRequest);
 
         Map<String, Object> attrs = oauthUser.getAttributes();
