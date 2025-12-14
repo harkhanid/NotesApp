@@ -27,7 +27,7 @@ import com.dharmikharkhani.notes.dto.UserResponseDTO;
 import com.dharmikharkhani.notes.service.NoteService;
 import com.dharmikharkhani.notes.service.EmailService;
 import com.dharmikharkhani.notes.service.TokenService;
-import jakarta.mail.MessagingException;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -87,7 +87,7 @@ public class AuthController {
 	            // Send verification email
 	            try {
 	                emailService.sendVerificationEmail(savedUser, savedUser.getVerificationToken());
-	            } catch (MessagingException e) {
+	            } catch (IOException e) {
 	                return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
 	            }
 
@@ -249,7 +249,7 @@ public class AuthController {
             // Send verification email
             try {
                 emailService.sendVerificationEmail(user, user.getVerificationToken());
-            } catch (MessagingException e) {
+            } catch (IOException e) {
                 return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
             }
 
@@ -283,7 +283,7 @@ public class AuthController {
             // Send password reset email
             try {
                 emailService.sendPasswordResetEmail(user, user.getPasswordResetToken());
-            } catch (MessagingException e) {
+            } catch (IOException e) {
                 return ResponseEntity.status(500).body(Map.of("error", "Failed to send password reset email"));
             }
 
