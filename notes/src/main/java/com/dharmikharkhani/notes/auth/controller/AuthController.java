@@ -32,8 +32,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-		@Autowired
-	 	private final UserRepository userRepo;
+		private final UserRepository userRepo;
 	    private final BCryptPasswordEncoder passwordEncoder;
 	    private final AuthenticationManager authenticationManager;
 	    private final JwtUtil jwtUtil;
@@ -48,8 +47,8 @@ public class AuthController {
 	    private String cookieSameSite;
 
 	    public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
-	                          AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-	                          NoteService noteService, EmailService emailService, TokenService tokenService) {
+                              AuthenticationManager authenticationManager, JwtUtil jwtUtil,
+                              NoteService noteService, EmailService emailService, TokenService tokenService) {
 	        this.userRepo = userRepo;
 	        this.passwordEncoder = passwordEncoder;
 	        this.authenticationManager = authenticationManager;
@@ -57,7 +56,7 @@ public class AuthController {
 	        this.noteService = noteService;
 	        this.emailService = emailService;
 	        this.tokenService = tokenService;
-	    }
+        }
 
 	    @PostMapping("/register")
 	    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
@@ -114,9 +113,9 @@ public class AuthController {
 	        // Send verification email
 	        try {
 	            emailService.sendVerificationEmail(savedUser, savedUser.getVerificationToken());
-	        } catch (MessagingException e) {
-	            return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
-	        }
+	        } catch (Exception e){
+                return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
+            }
 
 	        return ResponseEntity.ok(Map.of("msg", "user created", "emailSent", true));
 	    }
