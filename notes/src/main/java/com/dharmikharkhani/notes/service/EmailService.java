@@ -1,56 +1,69 @@
 package com.dharmikharkhani.notes.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.dharmikharkhani.notes.auth.model.User;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    @Value("${spring.mail.username}")
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
+
+    @Value("${sendgrid.from.email}")
     private String fromEmail;
 
-    public void sendVerificationEmail(User user, String token) throws MessagingException {
-        String verificationUrl = frontendUrl + "/verify-email?token=" + token;
+    @Value("${sendgrid.from.name:NotesApp}")
+    private String fromName;
 
+    public void sendVerificationEmail(User user, String token) throws IOException {
+        String verificationUrl = frontendUrl + "/verify-email?token=" + token;
         String subject = "Verify Your NotesApp Account";
         String htmlContent = buildVerificationEmailTemplate(user.getName(), verificationUrl);
 
-        sendHtmlEmail(user.getEmail(), subject, htmlContent);
+        sendEmail(user.getEmail(), subject, htmlContent);
     }
 
-    public void sendPasswordResetEmail(User user, String token) throws MessagingException {
+    public void sendPasswordResetEmail(User user, String token) throws IOException {
         String resetUrl = frontendUrl + "/resetpassword?token=" + token;
-
         String subject = "Reset Your NotesApp Password";
         String htmlContent = buildPasswordResetEmailTemplate(user.getName(), resetUrl);
 
-        sendHtmlEmail(user.getEmail(), subject, htmlContent);
+        sendEmail(user.getEmail(), subject, htmlContent);
     }
 
-    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    private void sendEmail(String to, String subject, String htmlContent) throws IOException {
+        Email from = new Email(fromEmail, fromName);
+        Email toEmail = new Email(to);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, toEmail, content);
 
-        helper.setFrom(fromEmail);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
 
-        mailSender.send(message);
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sg.api(request);
+
+        if (response.getStatusCode() >= 400) {
+            throw new IOException("Failed to send email. Status: " + response.getStatusCode() +
+                                  ", Body: " + response.getBody());
+        }
     }
 
     private String buildVerificationEmailTemplate(String userName, String verificationUrl) {
