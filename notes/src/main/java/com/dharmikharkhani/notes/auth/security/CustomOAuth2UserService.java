@@ -64,6 +64,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
             user.setRoles("ROLE_USER");
             user.setProvider("GOOGLE");
             user.setEmailVerified(false); // Will be set to true in success handler
+            user.setAccountApproved(true); // OAuth users are auto-approved
+            user.setAccountRejected(false);
             user = userRepo.save(user);
             logger.info("New OAuth user created with ID: {}", user.getId());
         }

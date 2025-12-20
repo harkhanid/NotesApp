@@ -12,7 +12,6 @@ import "./LoginPage.css";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showVerificationError, setShowVerificationError] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -25,11 +24,15 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    // Check if error is email not verified
-    if (error && typeof error === 'string' && error.includes('email not verified')) {
-      dispatch(addToast({ message: "Your email is not verified!", type: "error" }));
+    // Check for account status errors
+    if (error && typeof error === 'string') {
+      if (error.includes('account pending approval')) {
+        dispatch(addToast({ message: "Your account is pending admin approval. Please wait for an administrator to verify your account.", type: "warning" }));
+      } else if (error.includes('account rejected')) {
+        dispatch(addToast({ message: "Your account has been rejected. Please contact support for more information.", type: "error" }));
+      }
     }
-  }, [error]);
+  }, [error, dispatch]);
 
   // Check for OAuth error in URL params
   useEffect(() => {

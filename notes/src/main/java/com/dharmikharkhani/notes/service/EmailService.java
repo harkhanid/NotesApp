@@ -20,10 +20,10 @@ public class EmailService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    @Value("${sendgrid.api.key}")
+    @Value("${sendgrid.api.key:}")
     private String sendGridApiKey;
 
-    @Value("${sendgrid.from.email}")
+    @Value("${sendgrid.from.email:noreply@notesapp.com}")
     private String fromEmail;
 
     @Value("${sendgrid.from.name:NotesApp}")
@@ -46,6 +46,14 @@ public class EmailService {
     }
 
     private void sendEmail(String to, String subject, String htmlContent) throws IOException {
+        // Check if SendGrid is configured
+        if (sendGridApiKey == null || sendGridApiKey.trim().isEmpty()) {
+            System.out.println("⚠️  SendGrid not configured - Email would be sent to: " + to);
+            System.out.println("   Subject: " + subject);
+            System.out.println("   (Set SENDGRID_API_KEY environment variable to enable email sending)");
+            return; // Skip sending in development mode
+        }
+
         Email from = new Email(fromEmail, fromName);
         Email toEmail = new Email(to);
         Content content = new Content("text/html", htmlContent);

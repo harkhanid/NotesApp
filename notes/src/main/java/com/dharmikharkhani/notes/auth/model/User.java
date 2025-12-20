@@ -41,6 +41,12 @@ public class User implements UserDetails {
 	@Column(nullable = false)
 	private Boolean emailVerified = false;
 
+	@Column(nullable = false)
+	private Boolean accountApproved = false;
+
+	@Column(nullable = false)
+	private Boolean accountRejected = false;
+
 	@Column(nullable = true)
 	private String verificationToken;
 
@@ -130,6 +136,22 @@ public class User implements UserDetails {
 		this.emailVerified = emailVerified;
 	}
 
+	public Boolean getAccountApproved() {
+		return accountApproved;
+	}
+
+	public void setAccountApproved(Boolean accountApproved) {
+		this.accountApproved = accountApproved;
+	}
+
+	public Boolean getAccountRejected() {
+		return accountRejected;
+	}
+
+	public void setAccountRejected(Boolean accountRejected) {
+		this.accountRejected = accountRejected;
+	}
+
 	public String getVerificationToken() {
 		return verificationToken;
 	}
@@ -187,5 +209,13 @@ public class User implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public boolean hasRole(String role) {
+		return this.roles != null && Arrays.asList(this.roles.split(",")).contains(role);
+	}
+
+	public boolean isAdmin() {
+		return hasRole("ROLE_ADMIN");
 	}
 }
