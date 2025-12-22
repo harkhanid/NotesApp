@@ -23,4 +23,9 @@ public interface UserRepository extends JpaRepository<User, Long>{
 
 	List<User> findByAccountRejected(Boolean accountRejected);
 
+	// Demo account functionality
+	List<User> findByIsDemoAccountTrue();
+
+	List<User> findByIsDemoAccountTrueAndLastActivityAtBefore(java.time.LocalDateTime threshold);
+
 }

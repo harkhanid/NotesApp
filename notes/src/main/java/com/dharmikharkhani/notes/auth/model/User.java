@@ -47,6 +47,12 @@ public class User implements UserDetails {
 	@Column(nullable = false)
 	private Boolean accountRejected = false;
 
+	@Column(nullable = false)
+	private Boolean isDemoAccount = false;
+
+	@Column(nullable = true)
+	private LocalDateTime lastActivityAt;
+
 	@Column(nullable = true)
 	private String verificationToken;
 
@@ -150,6 +156,22 @@ public class User implements UserDetails {
 
 	public void setAccountRejected(Boolean accountRejected) {
 		this.accountRejected = accountRejected;
+	}
+
+	public Boolean getIsDemoAccount() {
+		return isDemoAccount;
+	}
+
+	public void setIsDemoAccount(Boolean isDemoAccount) {
+		this.isDemoAccount = isDemoAccount;
+	}
+
+	public LocalDateTime getLastActivityAt() {
+		return lastActivityAt;
+	}
+
+	public void setLastActivityAt(LocalDateTime lastActivityAt) {
+		this.lastActivityAt = lastActivityAt;
 	}
 
 	public String getVerificationToken() {

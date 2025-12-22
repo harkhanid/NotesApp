@@ -1,0 +1,115 @@
+.demo-personas {
+  margin-top: 1.5rem;
+}
+
+.demo-title {
+  color: var(--clr-neutral-600);
+  margin-bottom: 1rem;
+}
+
+.personas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.persona-card {
+  background: white;
+  border: 1px solid var(--clr-neutral-200);
+  border-top: 3px solid var(--clr-blue-500);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.persona-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--clr-blue-300);
+}
+
+.persona-emoji {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.persona-name {
+  font-weight: 600;
+  color: var(--clr-neutral-900);
+}
+
+.persona-job {
+  color: var(--clr-neutral-700);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.persona-description {
+  color: var(--clr-neutral-600);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* Tablet - 2 columns */
+@media (max-width: 900px) {
+  .personas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Floating button for mobile */
+.demo-floating-btn {
+  display: none; /* Hidden by default on desktop */
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: linear-gradient(135deg, var(--clr-blue-500) 0%, var(--clr-blue-700) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(51, 92, 255, 0.4);
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.demo-floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(51, 92, 255, 0.5);
+}
+
+.demo-floating-btn:active {
+  transform: translateY(0);
+}
+
+.demo-btn-icon {
+  font-size: 1.25rem;
+}
+
+.demo-btn-text {
+  font-size: 0.875rem;
+}
+
+/* Mobile - hide personas grid, show floating button */
+@media (max-width: 768px) {
+  .demo-personas {
+    display: none;
+  }
+
+  .demo-floating-btn {
+    display: flex;
+  }
+}
