@@ -95,24 +95,23 @@ const SignUpPage = () => {
         <div className="card flow-content">
           <img src={logo} className="logo" alt="Logo" />
           <div className="card-text">
-            <p className="title preset-1">Check Your Email!</p>
+            <p className="title preset-1">Account Created!</p>
             <p className="preset-5 sub-title">
-              We've sent a verification email to <strong>{email}</strong>
+              Your account has been successfully created.
             </p>
           </div>
           <div className="verification-success-message">
             <p className="preset-4">
-              Please click the verification link in the email to activate your account.
+              Your account is pending admin approval. You will be able to login once an administrator has verified your account.
             </p>
             <p className="preset-5">
-              The verification link will expire in 1 hour.
+              Please check back later or contact support if you have any questions.
             </p>
           </div>
           <hr />
           <p className="preset-5 center">
-            Didn't receive the email?{" "}
-            <Link to="/resend-verification" className="link">
-              Resend verification email
+            <Link to="/login" className="link">
+              Back to Login
             </Link>
           </p>
         </div>

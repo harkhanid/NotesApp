@@ -171,9 +171,9 @@
 .note-content{
   grid-row: 2/end;
   grid-column: 2/3;
-  overflow-y: auto; 
+  overflow-y: auto;
   padding: 1.5rem 1rem;
-  min-height: 100vh;
+  
 }
 
 .note-metadata > .split{

@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Base64;
+import java.util.Optional;
 
 @Component
 public class StatelessAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
@@ -61,16 +62,16 @@ public class StatelessAuthorizationRequestRepository implements AuthorizationReq
         }
     }
 
-    private java.util.Optional<Cookie> getCookie(HttpServletRequest request) {
+    private Optional<Cookie> getCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(COOKIE_NAME)) {
-                    return java.util.Optional.of(cookie);
+                    return Optional.of(cookie);
                 }
             }
         }
-        return java.util.Optional.empty();
+        return Optional.empty();
     }
 
     private OAuth2AuthorizationRequest deserialize(Cookie cookie) {

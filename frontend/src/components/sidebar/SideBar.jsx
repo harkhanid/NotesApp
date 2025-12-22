@@ -20,6 +20,10 @@ const SideBar = () => {
   const currentFilter = useSelector((state) => state.ui.filter);
   const currentTag = useSelector((state) => state.ui.selectedTag);
   const tags = useSelector((state) => state.notes.tags);
+  const user = useSelector((state) => state.auth.user);
+
+  // Check if user is admin
+  const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
 
   const sidebarContents = [
     { name: "My Notes", icon: HomeIcon, filter: "MY_NOTES", className: "home-icon" },
@@ -64,6 +68,17 @@ const SideBar = () => {
               tags.map((tag) => <li key={tag} onClick={() => { setTag(tag) }} className={`tag-item sidebar-item ${currentFilter == "TAG" && currentTag == tag ? "selected" : ""}`}><TagIcon className="icon tag-icon" /><span>{tag}</span></li>)
             }
           </ul>
+          {isAdmin && (
+            <>
+              <hr />
+              <ul className="flow-content xxs-spacer">
+                <li onClick={() => navigate("/admin")} className="sidebar-item admin-link">
+                  <SettingsIcon className="icon setting-icon" />
+                  <span>Admin Panel</span>
+                </li>
+              </ul>
+            </>
+          )}
         </div>
       </div>
       <div className="navbar-mobile">

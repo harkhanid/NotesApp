@@ -69,28 +69,8 @@ public class AuthController {
 	        User existingUser = userRepo.findByEmail(email).orElse(null);
 
 	        if (existingUser != null) {
-	            // If user exists and is already verified, reject registration
-	            if (existingUser.getEmailVerified()) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already registered. Please login."));
-	            }
-
-	            // If user exists but is NOT verified, update their info and resend verification email
-	            existingUser.setName(name);
-	            existingUser.setPassword(passwordEncoder.encode(password));
-
-	            // Generate new verification token
-	            tokenService.setVerificationToken(existingUser);
-
-	            User savedUser = userRepo.save(existingUser);
-
-	            // Send verification email
-	            try {
-	                emailService.sendVerificationEmail(savedUser, savedUser.getVerificationToken());
-	            } catch (IOException e) {
-	                return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
-	            }
-
-	            return ResponseEntity.ok(Map.of("msg", "Verification email resent", "emailSent", true));
+	            // If user exists, reject registration
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already registered."));
 	        }
 
 	        // Create new user
@@ -101,23 +81,15 @@ public class AuthController {
 	        u.setRoles("ROLE_user");
             u.setProvider("JWT");
             u.setEmailVerified(false);
-
-            // Generate verification token
-            tokenService.setVerificationToken(u);
+            u.setAccountApproved(false);  // Requires admin approval
+            u.setAccountRejected(false);
 
 	        User savedUser = userRepo.save(u);
 
 	        // Create welcome note for new user
 	        noteService.createWelcomeNote(savedUser);
 
-	        // Send verification email
-	        try {
-	            emailService.sendVerificationEmail(savedUser, savedUser.getVerificationToken());
-	        } catch (Exception e){
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
-            }
-
-	        return ResponseEntity.ok(Map.of("msg", "user created", "emailSent", true));
+	        return ResponseEntity.ok(Map.of("msg", "Account created. Pending admin approval.", "success", true));
 	    }
 
 	    @PostMapping("/login")
@@ -131,9 +103,14 @@ public class AuthController {
 	        }
 	        User u = userRepo.findByEmail(email).orElseThrow();
 
-	        // Check if email is verified (only for JWT provider, skip for OAuth)
-	        if ("JWT".equals(u.getProvider()) && !u.getEmailVerified()) {
-	            return ResponseEntity.status(403).body(Map.of("error", "email not verified", "email", email));
+	        // Check if account is rejected
+	        if (u.getAccountRejected()) {
+	            return ResponseEntity.status(403).body(Map.of("error", "account rejected", "email", email));
+	        }
+
+	        // Check if account is approved (only for JWT provider, OAuth users are auto-approved)
+	        if ("JWT".equals(u.getProvider()) && !u.getAccountApproved()) {
+	            return ResponseEntity.status(403).body(Map.of("error", "account pending approval", "email", email));
 	        }
 
 	        String token = jwtUtil.generateToken(u.getUsername(), u.getRoles(), "LOCAL");
@@ -153,7 +130,7 @@ public class AuthController {
 	            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
 	        }
 	        User user = userRepo.findByEmail(authentication.getName()).orElseThrow();
-	        return ResponseEntity.ok(new UserResponseDTO(user.getId(), user.getEmail(), user.getName()));
+	        return ResponseEntity.ok(new UserResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getRoles()));
 	    }
 
         @PostMapping("/logout")
@@ -201,59 +178,9 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("exists", exists, "email", email));
         }
 
-        /**
-         * Verify email address with token
-         */
-        @GetMapping("/verify-email")
-        public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-            User user = userRepo.findByVerificationToken(token)
-                    .orElse(null);
-
-            if (user == null) {
-                return ResponseEntity.status(400).body(Map.of("error", "Invalid verification token"));
-            }
-
-            if (tokenService.isTokenExpired(user.getVerificationTokenExpiry())) {
-                return ResponseEntity.status(400).body(Map.of("error", "Verification token has expired"));
-            }
-
-            user.setEmailVerified(true);
-            tokenService.clearVerificationToken(user);
-            userRepo.save(user);
-
-            return ResponseEntity.ok(Map.of("msg", "Email verified successfully", "success", true));
-        }
-
-        /**
-         * Resend verification email
-         */
-        @PostMapping("/resend-verification")
-        public ResponseEntity<?> resendVerificationEmail(@RequestBody Map<String, String> body) {
-            String email = body.get("email");
-            if (email == null) return ResponseEntity.badRequest().body(Map.of("error", "Email required"));
-
-            User user = userRepo.findByEmail(email).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
-            }
-
-            if (user.getEmailVerified()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Email already verified"));
-            }
-
-            // Generate new verification token
-            tokenService.setVerificationToken(user);
-            userRepo.save(user);
-
-            // Send verification email
-            try {
-                emailService.sendVerificationEmail(user, user.getVerificationToken());
-            } catch (IOException e) {
-                return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification email"));
-            }
-
-            return ResponseEntity.ok(Map.of("msg", "Verification email sent", "success", true));
-        }
+        // Email verification endpoints removed - using manual admin approval instead
+        // @GetMapping("/verify-email") - DEPRECATED
+        // @PostMapping("/resend-verification") - DEPRECATED
 
         /**
          * Request password reset

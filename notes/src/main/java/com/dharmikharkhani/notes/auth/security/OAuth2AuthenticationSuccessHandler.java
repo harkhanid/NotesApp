@@ -63,6 +63,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             newUser.setRoles("ROLE_USER");
             newUser.setProvider("GOOGLE");
             newUser.setEmailVerified(true);
+            newUser.setAccountApproved(true);  // OAuth users are auto-approved
+            newUser.setAccountRejected(false);
 
             User savedUser = userRepo.save(newUser);
 

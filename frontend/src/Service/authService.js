@@ -82,30 +82,7 @@ const checkEmailExists = async (email) => {
   }
 };
 
-/**
- * Verify email with token
- */
-const verifyEmail = (token) => {
-  return fetch(API_URL + `/verify-email?token=${encodeURIComponent(token)}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-};
-
-/**
- * Resend verification email
- */
-const resendVerification = (email) => {
-  return fetch(API_URL + "/resend-verification", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
-};
+// Email verification functions removed - using manual admin approval instead
 
 /**
  * Request password reset
@@ -152,8 +129,6 @@ const authService = {
   checkAuthStatus,
   getWebSocketToken,
   checkEmailExists,
-  verifyEmail,
-  resendVerification,
   forgotPassword,
   validateResetToken,
   resetPassword,
