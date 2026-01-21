@@ -27,12 +27,16 @@ public class JwtUtil {
     public String generateToken(String email, String roles, String authProvider) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
+
+        // Trim roles to remove any leading/trailing whitespace or newlines
+        String cleanRoles = roles != null ? roles.trim() : "";
+
         return Jwts.builder()
                 .setSubject(email)
                 .setId(UUID.randomUUID().toString())
                 .setIssuedAt(now)
                 .setExpiration(exp)
-                .claim("roles", roles)
+                .claim("roles", cleanRoles)
                 .claim("auth_provider", authProvider)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
