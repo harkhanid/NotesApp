@@ -45,7 +45,7 @@ public class Note {
         @JsonIgnore
 	    private User owner;
 
-	    @ManyToMany
+	    @ManyToMany(fetch = FetchType.EAGER)
 	    @JoinTable(
 	        name = "note_tags",
 	        joinColumns = @JoinColumn(name = "note_id"),

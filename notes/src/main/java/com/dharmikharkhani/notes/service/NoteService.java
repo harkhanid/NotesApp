@@ -25,11 +25,13 @@ public class NoteService {
     private final UserRepository userRepository;
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
+    private final PGVectorSearchService pgVectorSearchService;
 
-    public NoteService(UserRepository userRepository, NoteRepository noteRepository, TagRepository tagRepository) {
+    public NoteService(UserRepository userRepository, NoteRepository noteRepository, TagRepository tagRepository, PGVectorSearchService pgVectorSearchService) {
         this.userRepository = userRepository;
         this.noteRepository = noteRepository;
         this.tagRepository = tagRepository;
+        this.pgVectorSearchService = pgVectorSearchService;
     }
 
 
@@ -66,6 +68,10 @@ public class NoteService {
         note.setTags(tags);
 
         Note savedNote = noteRepository.save(note);
+
+        // Generate embedding for the new note asynchronously
+        pgVectorSearchService.upsertNoteEmbedding(savedNote.getId(), savedNote.getTitle(), savedNote.getContent());
+
         return savedNote;
     }
 
@@ -91,13 +97,36 @@ public class NoteService {
         existingNote.setTags(tags);
 
         Note savedNote = noteRepository.save(existingNote);
+
+        // Update embedding for the modified note
+        pgVectorSearchService.upsertNoteEmbedding(savedNote.getId(), savedNote.getTitle(), savedNote.getContent());
+
         return NoteResponseDTO.from(savedNote);
     }
 
     public void deleteNote(UUID id) {
         Note noteToDelete = noteRepository.findById(id)
                 .orElseThrow(ResourceNotFoundException::new);
+
+        // Delete embedding first
+        pgVectorSearchService.deleteNoteEmbedding(id);
+
         noteRepository.delete(noteToDelete);
+    }
+
+    /**
+     * Update only the content of a note
+     * Used by collaboration server for incremental updates
+     */
+    @Transactional
+    public void updateNoteContent(UUID id, String content) {
+        Note note = noteRepository.findById(id)
+                .orElseThrow(ResourceNotFoundException::new);
+        note.setContent(content);
+        noteRepository.save(note);
+
+        // Update embedding for the modified content
+        pgVectorSearchService.upsertNoteEmbedding(note.getId(), note.getTitle(), note.getContent());
     }
 
     public Note patchNote(UUID id, Map<String, Object> updates, String userEmail) {
