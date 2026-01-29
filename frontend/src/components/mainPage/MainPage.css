@@ -302,7 +302,7 @@
     grid-row: 2/end;
     grid-column: 3/end;
     padding: 1.25rem 1.5rem;
-    max-width: 18rem;
+    width: 18rem;
     border-left: var(--border-grid);
   }
 

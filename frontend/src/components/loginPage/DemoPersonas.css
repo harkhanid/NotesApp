@@ -64,9 +64,8 @@
   }
 }
 
-/* Floating button for mobile */
+/* Floating button - visible on all screen sizes */
 .demo-floating-btn {
-  display: none; /* Hidden by default on desktop */
   position: fixed;
   bottom: 2rem;
   right: 2rem;
@@ -101,15 +100,4 @@
 
 .demo-btn-text {
   font-size: 0.875rem;
-}
-
-/* Mobile - hide personas grid, show floating button */
-@media (max-width: 768px) {
-  .demo-personas {
-    display: none;
-  }
-
-  .demo-floating-btn {
-    display: flex;
-  }
 }

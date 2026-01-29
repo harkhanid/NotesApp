@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../store/authSlice";
 import { addToast } from "../../store/toastSlice";
 import { API_DOMAIN } from "../../constants/constants";
-import DemoPersonas from "./DemoPersonas";
 import DemoPersonasModal from "./DemoPersonasModal";
 
 import logo from "../../assets/images/logo.svg";
@@ -56,13 +55,11 @@ const LoginPage = () => {
   };
 
   const handleDemoLogin = (demoEmail, demoPassword) => {
-    console.log("Demo login selected:", demoEmail);
     setEmail(demoEmail);
     setPassword(demoPassword);
-    // Automatically submit login after setting credentials
-    // setTimeout(() => {
-    //   dispatch(login({ email: demoEmail, password: demoPassword }));
-    // }, 100);
+    setTimeout(() => {
+      dispatch(login({ email: demoEmail, password: demoPassword }));
+    }, 100);
   };
 
   return (
@@ -73,7 +70,6 @@ const LoginPage = () => {
           <p className="title preset-1">Welcome to Notes</p>
           <p className="preset-5 sub-title">Please login to continue</p>
         </div>
-        <DemoPersonas onSelectDemo={handleDemoLogin} />
         <form className="login-form flow-content" onSubmit={handleLogin}>
           <div className="form-group flow-content xxs-spacer">
             <label htmlFor="email" className="block preset-4">Email Address</label>
@@ -99,17 +95,10 @@ const LoginPage = () => {
         </button>
         <hr />
         <p className="center preset-5">No Account yet? <Link to="/signup">Sign up</Link></p>
+        <p className="center preset-5">Don't want to create an Account? <Link onClick={() => setIsModalOpen(true)}>Try Demo Account</Link></p>
+
       </div>
 
-      {/* Mobile floating button */}
-      <button
-        className="demo-floating-btn"
-        onClick={() => setIsModalOpen(true)}
-        aria-label="Try demo accounts"
-      >
-        <span className="demo-btn-icon">✨</span>
-        <span className="demo-btn-text">Try Demo</span>
-      </button>
 
       {/* Mobile modal */}
       <DemoPersonasModal

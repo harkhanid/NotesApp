@@ -50,7 +50,7 @@ function App() {
     };
 
     checkBackendAndAuth();
-  }, [dispatch, checkStartup, setIsStarting]);
+  }, [dispatch, checkStartup]);
 
   // Fetch preferences when user is authenticated
   useEffect(() => {
