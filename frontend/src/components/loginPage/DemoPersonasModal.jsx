@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "./DemoPersonasModal.css";
 
 const DemoPersonasModal = ({ isOpen, onClose, onSelectDemo }) => {
+  const [selectedPersona, setSelectedPersona] = useState(null);
+
   const personas = [
     {
       id: 1,
@@ -57,42 +59,68 @@ const DemoPersonasModal = ({ isOpen, onClose, onSelectDemo }) => {
 
   if (!isOpen) return null;
 
-  const handleSelectDemo = (email, password) => {
-    onSelectDemo(email, password);
+  const handleLogin = () => {
+    if (selectedPersona) {
+      onSelectDemo(selectedPersona.email, selectedPersona.password);
+      onClose();
+      setSelectedPersona(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setSelectedPersona(null);
     onClose();
   };
 
   return (
     <>
-      <div className="modal-backdrop" onClick={onClose}></div>
+      <div className="modal-backdrop" onClick={handleCancel}></div>
       <div className="demo-modal">
         <div className="modal-header">
           <h3 className="preset-2">Try a Demo Account</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={handleCancel}>✕</button>
         </div>
         <div className="modal-body">
           <p className="preset-5 modal-subtitle">
             Explore NotesApp with pre-populated demo accounts
           </p>
-          <div className="personas-list">
+          <div className="personas-grid">
             {personas.map((persona) => (
-              <button
+              <div
                 key={persona.id}
-                className="persona-item"
-                onClick={() => handleSelectDemo(persona.email, persona.password)}
-                style={{ borderLeftColor: persona.color }}
+                onClick={() => setSelectedPersona(persona)}
+                className={`setting-option ${selectedPersona?.id === persona.id ? "selected" : ""}`}
               >
-                <div className="persona-item-emoji">{persona.emoji}</div>
-                <div className="persona-item-content">
-                  <div className="persona-item-name preset-4">{persona.name}</div>
-                  <div className="persona-item-job preset-5">{persona.job}</div>
-                  <div className="persona-item-description preset-5">
-                    {persona.description}
-                  </div>
+                <div className="persona-icon-container">
+                  <div className="persona-emoji">{persona.emoji}</div>
                 </div>
-              </button>
+                <div className="persona-info flow-content xxs-spacer">
+                  <p className="persona-name preset-4">{persona.name}</p>
+                  <p className="persona-job preset-6">{persona.job}</p>
+                </div>
+                <input
+                  type="radio"
+                  name="persona"
+                  value={persona.id}
+                  checked={selectedPersona?.id === persona.id}
+                  onChange={() => setSelectedPersona(persona)}
+                  className="persona-radio"
+                />
+              </div>
             ))}
           </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={handleCancel}>
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={handleLogin}
+            disabled={!selectedPersona}
+          >
+            Login
+          </button>
         </div>
       </div>
     </>

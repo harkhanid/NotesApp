@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { API_DOMAIN } from '../constants/constants';
 
 /**
@@ -8,7 +8,7 @@ import { API_DOMAIN } from '../constants/constants';
 export const useBackendStartup = () => {
   const [isStarting, setIsStarting] = useState(false);
 
-  const checkStartup = async () => {
+  const checkStartup = useCallback(async () => {
     try {
       // Try to ping the backend with a timeout
       const controller = new AbortController();
@@ -40,7 +40,7 @@ export const useBackendStartup = () => {
       setIsStarting(true);
       return true;
     }
-  };
+  }, []); // Empty dependencies - stable reference
 
   return { isStarting, checkStartup, setIsStarting };
 };

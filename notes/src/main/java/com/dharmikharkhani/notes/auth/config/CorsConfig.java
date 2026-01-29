@@ -25,7 +25,16 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Allow both frontend and collaboration server origins
-        List<String> allowedOrigins = new ArrayList<>(Arrays.asList(frontendUrl));
+        List<String> allowedOrigins = new ArrayList<>();
+
+        // Split frontend URL by comma to support multiple origins
+        if (frontendUrl != null && !frontendUrl.isEmpty()) {
+            String[] frontendUrls = frontendUrl.split(",");
+            for (String url : frontendUrls) {
+                allowedOrigins.add(url.trim());
+            }
+        }
+
         if (collaborationUrl != null && !collaborationUrl.isEmpty()) {
             allowedOrigins.add(collaborationUrl);
         }
