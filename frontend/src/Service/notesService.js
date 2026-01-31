@@ -1,10 +1,15 @@
 import apiClient, { api, API_URL } from "../utils/apiClient.js";
 
-const getAllNotes = () => {
+// Temporary delay helper for testing skeleton loaders
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const getAllNotes = async () => {
+  await delay(2000); // 2 second delay to see skeleton loaders
   return api.get(`${API_URL}/notes`);
 };
 
-const getTags = () => {
+const getTags = async () => {
+  await delay(2000); // 2 second delay to see skeleton loaders
   return api.get(`${API_URL}/tags`);
 };
 

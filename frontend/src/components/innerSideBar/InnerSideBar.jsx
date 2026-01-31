@@ -9,6 +9,8 @@ import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.j
 import { selectTag, updateFilter } from "../../store/uiSlice";
 import { formatCreatedDate } from "../../utils/dateUtils.js";
 import { addToast } from "../../store/toastSlice.js";
+import SkeletonTag from "../common/SkeletonTag.jsx";
+import SkeletonNoteItem from "../common/SkeletonNoteItem.jsx";
 
 import "./InnerSideBar.css";
 
@@ -22,6 +24,7 @@ const InnerSideBar = () => {
   const searchIds = useSelector((state)=> state.notes.searchIds);
   const tagFromStore = useSelector((state)=> state.ui.selectedTag);
   const tags = useSelector((state)=> state.notes.tags);
+  const loading = useSelector((state)=> state.notes.loading);
   const currentUser = useSelector((state)=> state.auth.user);
 
   const MAX_VISIBLE_TAGS = 3;
@@ -143,7 +146,15 @@ const InnerSideBar = () => {
       {tagFromStore.length == 0 && currentFilter == "TAG" &&
       <ul className="tags-list flow-content xxs-spacer">
         {
-          tags.map((tag)=> <li key={tag}onClick={()=>{setTag(tag)}}  className={`tag-item sidebar-item`}><TagIcon className="tag-icon icon" /><span>{tag}</span></li>)
+          loading ? (
+            <>
+              <SkeletonTag />
+              <SkeletonTag />
+              <SkeletonTag />
+            </>
+          ) : (
+            tags.map((tag)=> <li key={tag}onClick={()=>{setTag(tag)}}  className={`tag-item sidebar-item`}><TagIcon className="tag-icon icon" /><span>{tag}</span></li>)
+          )
         }
       </ul>
       }
@@ -151,40 +162,48 @@ const InnerSideBar = () => {
         <button className="btn btn-primary full-width preset-4 center" onClick={createNewNote}><PlusIcon /> <span>Create new Note</span></button>
       </div>
       <div className="notes-list  xxs-spacer">
-        { 
-          notesList.length == 0 && emptyMessage.length > 0? 
-          <div className="note-item">
-            <p className="preset-5">{emptyMessage}</p>
-          </div>:
-          notesList.length > 0 && 
-          <>
-          <p className='preset-5'>{descritionMessage}</p>
-          <Reorder.Group
-            axis="y"
-            values={notesList}
-            onReorder={() => {}}
-          >
-            {notesList.map((note) => (   
-              <Reorder.Item key={note.id} value={note}>      
-                <motion.div layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }} onClick={()=>{selectNote(note.id)}} className={`note-item flow-content xsm-spacer ${note.id== currentNoteId ?"selected":""}`}
-                >
-                  <p className="preset-3">{note.title || "New Note"}</p>
-                  <div className="note-tags split">
-                    {renderTags(note.tags)}
-                  </div>
-                  <p className="preset-6">{note.createdAt ? formatCreatedDate(note.createdAt) : ''}</p>
-                </motion.div>
-              </Reorder.Item>
+        {
+          loading ? (
+            <>
+              <SkeletonNoteItem />
+              <SkeletonNoteItem />
+              <SkeletonNoteItem />
+            </>
+          ) : (
+            notesList.length == 0 && emptyMessage.length > 0?
+            <div className="note-item">
+              <p className="preset-5">{emptyMessage}</p>
+            </div>:
+            notesList.length > 0 &&
+            <>
+            <p className='preset-5'>{descritionMessage}</p>
+            <Reorder.Group
+              axis="y"
+              values={notesList}
+              onReorder={() => {}}
+            >
+              {notesList.map((note) => (
+                <Reorder.Item key={note.id} value={note}>
+                  <motion.div layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }} onClick={()=>{selectNote(note.id)}} className={`note-item flow-content xsm-spacer ${note.id== currentNoteId ?"selected":""}`}
+                  >
+                    <p className="preset-3">{note.title || "New Note"}</p>
+                    <div className="note-tags split">
+                      {renderTags(note.tags)}
+                    </div>
+                    <p className="preset-6">{note.createdAt ? formatCreatedDate(note.createdAt) : ''}</p>
+                  </motion.div>
+                </Reorder.Item>
+                )
               )
-            )
-            }
-          </Reorder.Group>
-          </>
+              }
+            </Reorder.Group>
+            </>
+          )
         }
-            
+
       </div>
     </div>
   )

@@ -11,6 +11,7 @@ import SettingsIcon from "../../assets/images/icon-settings.svg?react";
 import LogoutIcon from "../../assets/images/icon-logout.svg?react";
 import { setCurrentNote} from "../../store/notesSlice.js";
 import { updateFilter, selectTag } from "../../store/uiSlice";
+import SkeletonTag from "../common/SkeletonTag.jsx";
 
 import "./SideBar.css";
 
@@ -20,6 +21,7 @@ const SideBar = () => {
   const currentFilter = useSelector((state) => state.ui.filter);
   const currentTag = useSelector((state) => state.ui.selectedTag);
   const tags = useSelector((state) => state.notes.tags);
+  const loading = useSelector((state) => state.notes.loading);
   const user = useSelector((state) => state.auth.user);
 
   // Check if user is admin
@@ -65,7 +67,15 @@ const SideBar = () => {
           <p className="section-title sidebar-content">Tags</p>
           <ul className="tags-list flow-content xxs-spacer">
             {
-              tags.map((tag) => <li key={tag} onClick={() => { setTag(tag) }} className={`tag-item sidebar-item ${currentFilter == "TAG" && currentTag == tag ? "selected" : ""}`}><TagIcon className="icon tag-icon" /><span>{tag}</span></li>)
+              loading ? (
+                <>
+                  <SkeletonTag />
+                  <SkeletonTag />
+                  <SkeletonTag />
+                </>
+              ) : (
+                tags.map((tag) => <li key={tag} onClick={() => { setTag(tag) }} className={`tag-item sidebar-item ${currentFilter == "TAG" && currentTag == tag ? "selected" : ""}`}><TagIcon className="icon tag-icon" /><span>{tag}</span></li>)
+              )
             }
           </ul>
           {isAdmin && (

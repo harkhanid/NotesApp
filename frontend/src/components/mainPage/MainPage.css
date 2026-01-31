@@ -2,10 +2,9 @@
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
   width: 100%;
+  overflow-y: auto;
   min-height: 100vh;
-  background-color: var(--clr-neutral-0);
-  padding-bottom: 3.5rem;
-}
+  background-color: var(--clr-neutral-0);}
 
 .main-page_header{
   display: flex;
