@@ -26,10 +26,18 @@ public class DemoAccountResetService {
     }
 
     /**
-     * Scheduled job that runs every hour to reset inactive demo accounts
+     * DISABLED: Scheduled job that runs every hour to reset inactive demo accounts
+     *
+     * This cron-based reset has been replaced with login-time reset in AuthController.
+     * Demo accounts are now reset immediately when users log in after 2 hours of inactivity,
+     * providing better UX and reducing unnecessary background processing.
+     *
+     * Kept here for reference and potential manual/emergency resets if needed.
+     * To re-enable: uncomment @Scheduled annotation below.
+     *
      * Cron expression: "0 0 * * * *" = At minute 0 of every hour
      */
-    @Scheduled(cron = "0 0 * * * *")
+    // @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void resetInactiveDemoAccounts() {
         logger.info("Starting scheduled demo account reset job");

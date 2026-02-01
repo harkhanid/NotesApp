@@ -1,7 +1,10 @@
 package com.dharmikharkhani.notes.auth.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -27,11 +30,15 @@ import com.dharmikharkhani.notes.dto.UserResponseDTO;
 import com.dharmikharkhani.notes.service.NoteService;
 import com.dharmikharkhani.notes.service.EmailService;
 import com.dharmikharkhani.notes.service.TokenService;
+import com.dharmikharkhani.notes.service.DemoAccountService;
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+	    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+	    private static final int INACTIVITY_THRESHOLD_HOURS = 2;
+
 		private final UserRepository userRepo;
 	    private final BCryptPasswordEncoder passwordEncoder;
 	    private final AuthenticationManager authenticationManager;
@@ -39,6 +46,7 @@ public class AuthController {
 	    private final NoteService noteService;
 	    private final EmailService emailService;
 	    private final TokenService tokenService;
+	    private final DemoAccountService demoAccountService;
 
 	    @Value("${app.cookie.secure}")
 	    private boolean cookieSecure;
@@ -48,7 +56,8 @@ public class AuthController {
 
 	    public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
                               AuthenticationManager authenticationManager, JwtUtil jwtUtil,
-                              NoteService noteService, EmailService emailService, TokenService tokenService) {
+                              NoteService noteService, EmailService emailService, TokenService tokenService,
+                              DemoAccountService demoAccountService) {
 	        this.userRepo = userRepo;
 	        this.passwordEncoder = passwordEncoder;
 	        this.authenticationManager = authenticationManager;
@@ -56,6 +65,7 @@ public class AuthController {
 	        this.noteService = noteService;
 	        this.emailService = emailService;
 	        this.tokenService = tokenService;
+	        this.demoAccountService = demoAccountService;
         }
 
 	    @PostMapping("/register")
@@ -102,6 +112,14 @@ public class AuthController {
 	            return ResponseEntity.status(401).body(Map.of("error", "invalid credentials"));
 	        }
 	        User u = userRepo.findByEmail(email).orElseThrow();
+
+	        // Check and reset demo account if needed
+	        if (u.getIsDemoAccount() && shouldResetDemoAccount(u)) {
+	            logger.info("Resetting demo account {} due to inactivity", email);
+	            demoAccountService.resetDemoAccount(u);
+	            // Re-fetch user to get updated state after reset
+	            u = userRepo.findByEmail(email).orElseThrow();
+	        }
 
 	        // Check if account is rejected
 	        if (u.getAccountRejected()) {
@@ -264,5 +282,19 @@ public class AuthController {
             userRepo.save(user);
 
             return ResponseEntity.ok(Map.of("msg", "Password reset successfully", "success", true));
+        }
+
+        /**
+         * Check if demo account should be reset based on inactivity
+         * @param user User to check
+         * @return true if account should be reset, false otherwise
+         */
+        private boolean shouldResetDemoAccount(User user) {
+            if (user.getLastActivityAt() == null) {
+                // First login or already reset
+                return true;
+            }
+            LocalDateTime threshold = LocalDateTime.now().minusHours(INACTIVITY_THRESHOLD_HOURS);
+            return user.getLastActivityAt().isBefore(threshold);
         }
 }

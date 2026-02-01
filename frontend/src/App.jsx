@@ -92,7 +92,17 @@ function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />}>
+            <Route index element={null} />
+            <Route path="note/:noteId" element={null} />
+            <Route path="shared" element={null} />
+            <Route path="shared/:noteId" element={null} />
+            <Route path="search" element={null} />
+            <Route path="search/:noteId" element={null} />
+            <Route path="tags" element={null} />
+            <Route path="tags/:tagName" element={null} />
+            <Route path="tags/:tagName/:noteId" element={null} />
+          </Route>
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>

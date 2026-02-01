@@ -7,7 +7,6 @@ const toastSlice = createSlice({
   },
   reducers: {
     addToast: (state, action) => {
-      console.log("Toast started");
       const { type, message } = action.payload;
       const id = Date.now() + Math.random(); // Unique ID
       state.toasts.push({ id, type, message });

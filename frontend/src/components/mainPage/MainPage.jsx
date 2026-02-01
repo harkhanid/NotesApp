@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { updateNote,updateANoteAsync,setCurrentNote, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync, fetchAllNotesAsync } from "../../store/notesSlice.js";
-import { updateFilter,selectTag, setSearchNotes } from "../../store/uiSlice.js";
+import { updateNote,updateANoteAsync, searchNotesAsync, deleteNote, deleteNoteAsync, getTagsAsync, fetchAllNotesAsync } from "../../store/notesSlice.js";
+import { setSearchNotes } from "../../store/uiSlice.js";
 import { addToast } from "../../store/toastSlice.js";
+import { useNotesNavigation } from "../../hooks/useNotesNavigation.js";
 
 import { useDispatch, useSelector } from "react-redux";
 import InnerSideBar from "../innerSideBar/InnerSideBar.jsx";
@@ -26,6 +27,7 @@ import "./MainPage.css";
 
 const MainPage = () => {
   const dispatch = useDispatch();
+  const { navigateToSearch, navigateToTag, navigateToSettings, goBack } = useNotesNavigation();
   const currentFilter = useSelector((state) => state.ui.filter);
   const currentTag = useSelector((state)=> state.ui.selectedTag);
   const currentNoteId = useSelector((state)=> state.notes.currentId);
@@ -96,10 +98,13 @@ const MainPage = () => {
  const handleKeyPress = (e) => {
   const value = e.target.value;
   dispatch(setSearchNotes({ query: value }));
+
+  // Update URL with search query (replace to avoid history spam)
   if (timeoutSearchUpdateRef.current) {
     clearTimeout(timeoutSearchUpdateRef.current);
   }
   timeoutSearchUpdateRef.current = setTimeout(() => {
+    navigateToSearch(value, currentNoteId, true); // replace: true for no history spam
     dispatch(searchNotesAsync(value)); // use fresh input
   }, 300);
 };
@@ -141,8 +146,10 @@ const MainPage = () => {
     try {
       // Optimistic delete
       dispatch(deleteNote({ id: currentNoteId }));
-      dispatch(setCurrentNote({ id: null }));
       setIsDeleteModalOpen(false);
+
+      // Navigate back to list view (clear noteId from URL)
+      goBack();
 
       // Background API call
       const result = await dispatch(deleteNoteAsync({ id: currentNoteId, noteData }));
@@ -195,12 +202,12 @@ const MainPage = () => {
     <div className="main-page ">
       <div className={`main-page_header ${currentNoteId == null ? "" : "mobile-hide-flex" }`}>
         <div className={`tag-topbar mobile-topbar ${displayBackPanel? "" :"mobile-hide" }`}>
-          <button className="btn-none goback-btn" onClick={()=>{dispatch(selectTag({tag:""}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
+          <button className="btn-none goback-btn" onClick={()=>{navigateToTag()}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
         </div>
         <h2 className="header-title preset-1">{preTitle.length > 0 && <span className="pretitle">{preTitle}</span>}{title}</h2>
         {<div className={`header-tools split ${currentFilter == "SEARCH"? "": "mobile-hide" }`}>        
           <input type="text" placeholder="Search by title, content or tags..." onChange={handleKeyPress} />
-          <SettingIcon onClick={()=>{dispatch(updateFilter({filter:"SETTINGS"}))}} className="icon settings-icon mobile-hide" />
+          <SettingIcon onClick={navigateToSettings} className="icon settings-icon mobile-hide" />
         </div>}
       </div>
       {
@@ -213,7 +220,7 @@ const MainPage = () => {
           <InnerSideBar />
           <div className={`note-content flow-content ${currentNoteId == null ? "mobile-hide" : "" }` }>
             <div className={`mobile-topbar ${currentNoteId == null ? "mobile-hide" :"" }`}>
-              <button className="btn-none goback-btn" onClick={()=>{dispatch(setCurrentNote({id:null}))}}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
+              <button className="btn-none goback-btn" onClick={goBack}><LeftArrowIcon /><span className="preset-5">Go Back</span></button>
               {currentNote?.ownerId === currentUser?.id && (
                 <div className="top-bar-right">
                   <button className="btn-none" onClick={() => setIsShareModalOpen(true)}><ShareIcon /></button>

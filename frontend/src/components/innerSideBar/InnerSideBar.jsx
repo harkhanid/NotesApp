@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {motion, Reorder} from "framer-motion";
+import { useNotesNavigation } from "../../hooks/useNotesNavigation.js";
 
 import PlusIcon from "../../assets/images/icon-plus.svg?react";
 import TagIcon from "../../assets/images/icon-tag.svg?react";
 
-import { setCurrentNote, addAnote, addAnoteAsync} from "../../store/notesSlice.js";
-import { selectTag, updateFilter } from "../../store/uiSlice";
+import { addAnote, addAnoteAsync} from "../../store/notesSlice.js";
 import { formatCreatedDate } from "../../utils/dateUtils.js";
 import { addToast } from "../../store/toastSlice.js";
 import SkeletonTag from "../common/SkeletonTag.jsx";
@@ -17,6 +17,7 @@ import "./InnerSideBar.css";
 
 const InnerSideBar = () => {
   const dispatch  = useDispatch();
+  const { navigateToMyNotes, navigateToShared, navigateToSearch, navigateToTag } = useNotesNavigation();
   const currentNoteId = useSelector((state)=> state.notes.currentId);
   const queryFromStore = useSelector((state)=> state.ui.searchQuery);
   const currentFilter = useSelector((state) => state.ui.filter);
@@ -35,7 +36,6 @@ const InnerSideBar = () => {
 
   switch(currentFilter){
     case "MY_NOTES":
-      console.log("MY_NOTES filter applied");
       emptyMessage = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
       notesList = allNotesList.filter((note)=> note.ownerId === currentUser?.id);
       break;
@@ -67,28 +67,45 @@ const InnerSideBar = () => {
   useEffect(() => {
     // Skip auto-selection for SETTINGS view
     if (currentFilter === "SETTINGS") return;
-    
+
     const isDesktop = window.innerWidth >= 768;
-    console.log("InnerSideBar:", isDesktop, notesList, currentNoteId);
     if (isDesktop) {
       if (notesList.length > 0) {
         // Check if current note is in the filtered list
         const currentNoteInList = notesList.some(note => note.id === currentNoteId);
 
-        // If current note is not in the filtered list (or no note selected), select first note
+        // If current note is not in the filtered list (or no note selected), navigate to first note
         if (!currentNoteInList) {
-          dispatch(setCurrentNote({ id: notesList[0].id }));
+          const firstNoteId = notesList[0].id;
+          // Navigate based on current filter
+          if (currentFilter === "MY_NOTES") {
+            navigateToMyNotes(firstNoteId);
+          } else if (currentFilter === "SHARED_NOTES") {
+            navigateToShared(firstNoteId);
+          } else if (currentFilter === "SEARCH") {
+            navigateToSearch(queryFromStore, firstNoteId);
+          } else if (currentFilter === "TAG" && tagFromStore) {
+            navigateToTag(tagFromStore, firstNoteId);
+          }
         }
       } else {
-        // No notes in the list, clear selection
+        // No notes in the list, clear selection by navigating to base filter URL
         if (currentNoteId !== null) {
-          dispatch(setCurrentNote({ id: null }));
+          if (currentFilter === "MY_NOTES") {
+            navigateToMyNotes();
+          } else if (currentFilter === "SHARED_NOTES") {
+            navigateToShared();
+          } else if (currentFilter === "SEARCH") {
+            navigateToSearch(queryFromStore);
+          } else if (currentFilter === "TAG") {
+            navigateToTag(tagFromStore);
+          }
         }
       }
     }
-  }, [currentFilter, tagFromStore, searchIds, currentNoteId,notesList, dispatch]);
+  }, [currentFilter, tagFromStore, searchIds, currentNoteId, notesList, navigateToMyNotes, navigateToShared, navigateToSearch, navigateToTag, queryFromStore]);
 
-  const createNewNote = () =>{
+  const createNewNote = async () =>{
     const newNote = {
       title:"",
       tags:[],
@@ -98,19 +115,34 @@ const InnerSideBar = () => {
     const addNote = addAnote(newNote);
     const tempId = addNote.payload.id;
     dispatch(addNote);
-    dispatch(updateFilter({filter:"MY_NOTES"}));
-    dispatch(setCurrentNote({id: tempId}));
-    dispatch(addAnoteAsync({ note: addNote.payload, tempId }));
+
+    // Dispatch async save and wait for server response
+    const result = await dispatch(addAnoteAsync({ note: addNote.payload, tempId }));
     dispatch(addToast({ type: "success", message: `New Note created` }));
-    
-  }
-  const setTag = (tag)=>{
-      dispatch(selectTag({tag}));
+
+    // After server responds with real UUID, navigate to the note
+    if (addAnoteAsync.fulfilled.match(result)) {
+      const serverNoteId = result.payload.serverNote.id;
+      navigateToMyNotes(serverNoteId);
     }
+  }
+
+  const handleTagClick = (tag)=>{
+    navigateToTag(tag);
+  }
 
   const selectNote = (id) =>{
-    if(id != currentNoteId){
-      dispatch(setCurrentNote({id:id}));
+    if(id !== currentNoteId){
+      // Navigate based on current filter
+      if (currentFilter === "MY_NOTES") {
+        navigateToMyNotes(id);
+      } else if (currentFilter === "SHARED_NOTES") {
+        navigateToShared(id);
+      } else if (currentFilter === "SEARCH") {
+        navigateToSearch(queryFromStore, id);
+      } else if (currentFilter === "TAG" && tagFromStore) {
+        navigateToTag(tagFromStore, id);
+      }
     }
   }
 
@@ -153,7 +185,7 @@ const InnerSideBar = () => {
               <SkeletonTag />
             </>
           ) : (
-            tags.map((tag)=> <li key={tag}onClick={()=>{setTag(tag)}}  className={`tag-item sidebar-item`}><TagIcon className="tag-icon icon" /><span>{tag}</span></li>)
+            tags.map((tag)=> <li key={tag}onClick={()=>{handleTagClick(tag)}}  className={`tag-item sidebar-item`}><TagIcon className="tag-icon icon" /><span>{tag}</span></li>)
           )
         }
       </ul>

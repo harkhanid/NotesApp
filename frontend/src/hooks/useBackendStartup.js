@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { API_DOMAIN } from '../constants/constants';
+import { useState, useCallback } from "react";
+import { API_DOMAIN } from "../constants/constants";
 
 /**
  * Custom hook to detect if backend is starting up (Render free tier)
@@ -15,9 +15,9 @@ export const useBackendStartup = () => {
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
       const response = await fetch(`${API_DOMAIN}/actuator/health`, {
-        method: 'GET',
+        method: "GET",
         signal: controller.signal,
-        cache: 'no-store', // Don't cache the health check
+        cache: "no-store", // Don't cache the health check
       });
 
       clearTimeout(timeoutId);
@@ -32,11 +32,6 @@ export const useBackendStartup = () => {
       // AbortError = timeout
       // TypeError = network error (backend sleeping)
       // Either way, backend is starting
-      if (error.name === 'AbortError') {
-        console.log('Backend health check timeout - server is starting...');
-      } else {
-        console.log('Backend connection failed - server is starting...');
-      }
       setIsStarting(true);
       return true;
     }
@@ -48,7 +43,11 @@ export const useBackendStartup = () => {
 /**
  * Retry a function with exponential backoff while backend is starting
  */
-export const retryWhileStarting = async (fn, maxRetries = 20, initialDelay = 2000) => {
+export const retryWhileStarting = async (
+  fn,
+  maxRetries = 20,
+  initialDelay = 2000,
+) => {
   let retries = 0;
   let delay = initialDelay;
 
@@ -59,9 +58,9 @@ export const retryWhileStarting = async (fn, maxRetries = 20, initialDelay = 200
     } catch (error) {
       // Check if error is due to backend starting (503 or network error)
       const isStartupError =
-        error.message?.includes('503') ||
-        error.message?.includes('Failed to fetch') ||
-        error.message?.includes('NetworkError');
+        error.message?.includes("503") ||
+        error.message?.includes("Failed to fetch") ||
+        error.message?.includes("NetworkError");
 
       if (!isStartupError) {
         // Not a startup error, rethrow
@@ -70,11 +69,11 @@ export const retryWhileStarting = async (fn, maxRetries = 20, initialDelay = 200
 
       retries++;
       if (retries >= maxRetries) {
-        throw new Error('Backend startup timeout. Please try again later.');
+        throw new Error("Backend startup timeout. Please try again later.");
       }
 
       // Wait before retrying (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       delay = Math.min(delay * 1.5, 10000); // Max 10 second delay
     }
   }

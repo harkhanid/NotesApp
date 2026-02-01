@@ -1,6 +1,7 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useNotesNavigation } from "../../hooks/useNotesNavigation.js";
 import logo from "../../assets/images/logo.svg";
 import HomeIcon from "../../assets/images/icon-home.svg?react";
 import ArchiveIcon from "../../assets/images/icon-archive.svg?react";
@@ -9,15 +10,13 @@ import TagIcon from "../../assets/images/icon-tag.svg?react";
 import SearchIcon from "../../assets/images/icon-search.svg?react";
 import SettingsIcon from "../../assets/images/icon-settings.svg?react";
 import LogoutIcon from "../../assets/images/icon-logout.svg?react";
-import { setCurrentNote} from "../../store/notesSlice.js";
-import { updateFilter, selectTag } from "../../store/uiSlice";
 import SkeletonTag from "../common/SkeletonTag.jsx";
 
 import "./SideBar.css";
 
 const SideBar = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { navigateToMyNotes, navigateToShared, navigateToSearch, navigateToTag, navigateToSettings } = useNotesNavigation();
   const currentFilter = useSelector((state) => state.ui.filter);
   const currentTag = useSelector((state) => state.ui.selectedTag);
   const tags = useSelector((state) => state.notes.tags);
@@ -27,22 +26,24 @@ const SideBar = () => {
   // Check if user is admin
   const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
 
-  const sidebarContents = [
-    { name: "My Notes", icon: HomeIcon, filter: "MY_NOTES", className: "home-icon" },
-    { name: "Shared Notes", icon: ShareIcon, filter: "SHARED_NOTES", className: "share-icon" },
-  ];
-
-  const setFilter = (filter) => {
-    dispatch(setCurrentNote({ id: null })); 
-    dispatch(updateFilter({ filter }));
+  const handleMyNotesClick = () => {
+    navigateToMyNotes();
   };
 
-  const setTag = (tag) => {
-    dispatch(selectTag({ tag }));
+  const handleSharedNotesClick = () => {
+    navigateToShared();
   };
 
-  const handleLogout = () => {
-    dispatch(logout()).then(() => navigate("/login"));
+  const handleSearchClick = () => {
+    navigateToSearch();
+  };
+
+  const handleTagsClick = () => {
+    navigateToTag();
+  };
+
+  const handleTagClick = (tag) => {
+    navigateToTag(tag);
   };
 
   return (
@@ -53,15 +54,14 @@ const SideBar = () => {
         </div>
         <div className="sidebar-content flow-content xsm-spacer">
           <ul className="flow-content xxs-spacer">
-            {sidebarContents.map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <li key={index} onClick={() => { setFilter(item.filter) }} className={`sidebar-item ${currentFilter == item.filter ? "selected" : ""}`}>
-                  <IconComponent className={`icon ${item.className}`} />
-                  <span>{item.name}</span>
-                </li>
-              )
-            })}
+            <li onClick={handleMyNotesClick} className={`sidebar-item ${currentFilter == "MY_NOTES" ? "selected" : ""}`}>
+              <HomeIcon className="icon home-icon" />
+              <span>My Notes</span>
+            </li>
+            <li onClick={handleSharedNotesClick} className={`sidebar-item ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`}>
+              <ShareIcon className="icon share-icon" />
+              <span>Shared Notes</span>
+            </li>
           </ul>
           <hr />
           <p className="section-title sidebar-content">Tags</p>
@@ -74,7 +74,7 @@ const SideBar = () => {
                   <SkeletonTag />
                 </>
               ) : (
-                tags.map((tag) => <li key={tag} onClick={() => { setTag(tag) }} className={`tag-item sidebar-item ${currentFilter == "TAG" && currentTag == tag ? "selected" : ""}`}><TagIcon className="icon tag-icon" /><span>{tag}</span></li>)
+                tags.map((tag) => <li key={tag} onClick={() => { handleTagClick(tag) }} className={`tag-item sidebar-item ${currentFilter == "TAG" && currentTag == tag ? "selected" : ""}`}><TagIcon className="icon tag-icon" /><span>{tag}</span></li>)
               )
             }
           </ul>
@@ -92,19 +92,19 @@ const SideBar = () => {
         </div>
       </div>
       <div className="navbar-mobile">
-        <button className={`nav-item  ${currentFilter == "MY_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("MY_NOTES") }} >
+        <button className={`nav-item  ${currentFilter == "MY_NOTES" ? "selected" : ""}`} onClick={handleMyNotesClick} >
           <HomeIcon className="icon home-icon" />
         </button>
-        <button className={`nav-item  ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`} onClick={() => { setFilter("SHARED_NOTES") }} >
+        <button className={`nav-item  ${currentFilter == "SHARED_NOTES" ? "selected" : ""}`} onClick={handleSharedNotesClick} >
           <ShareIcon className="icon share-icon" />
         </button>
-        <button className={`nav-item  ${currentFilter == "SEARCH" ? "selected" : ""}`} onClick={() => { setFilter("SEARCH") }} >
+        <button className={`nav-item  ${currentFilter == "SEARCH" ? "selected" : ""}`} onClick={handleSearchClick} >
           <SearchIcon className="icon search-icon" />
         </button>
-        <button className={`nav-item  ${currentFilter == "TAG" ? "selected" : ""}`} onClick={() => { setFilter("TAG") }} >
+        <button className={`nav-item  ${currentFilter == "TAG" ? "selected" : ""}`} onClick={handleTagsClick} >
           <TagIcon className="icon tag-icon" />
         </button>
-        <button className={`nav-item  ${currentFilter == "SETTINGS" ? "selected" : ""}`} onClick={() => { setFilter("SETTINGS") }} >
+        <button className={`nav-item  ${currentFilter == "SETTINGS" ? "selected" : ""}`} onClick={navigateToSettings} >
           <SettingsIcon className="icon setting-icon" />
         </button>
       </div>
